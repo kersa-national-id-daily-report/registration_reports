@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Report</title>
+    
+    <!-- Chart.js for graphs -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Styling -->
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin: 20px; }
+        h1, h2 { color: #333; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+        th { background-color: #4CAF50; color: white; }
+        canvas { max-width: 100%; }
+    </style>
+</head>
+<body>
+
+    <h1>Registration Reports</h1>
+
+    <h2>Daily Report</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Name</th>
+                <th>Role</th>
+                <th>Registrations</th>
+            </tr>
+        </thead>
+        <tbody id="dailyReport"></tbody>
+    </table>
+
+    <h2>Weekly Registration Graph</h2>
+    <canvas id="weeklyChart"></canvas>
+
+    <h2>Weekly Report</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Role</th>
+                <th>Total Weekly Registrations</th>
+            </tr>
+        </thead>
+        <tbody id="weeklyReport"></tbody>
+    </table>
+
+    <script>
+        function loadCSV() {
+            fetch('data.csv')
+                .then(response => response.text())
+                .then(csv => {
+                    const rows = csv.split("\n").slice(1).map(line => line.split(","));
+                    processData(rows);
+                });
+        }
+
+        function processData(data) {
+            const dailyTable = document.getElementById('dailyReport');
+            const weeklyTable = document.getElementById('weeklyReport');
+
+            const today = new Date().toISOString().split('T')[0];
+            const lastWeekDates = Array.from({ length: 7 }, (_, i) => {
+                let d = new Date();
+                d.setDate(d.getDate() - i);
+                return d.toISOString().split('T')[0];
+            });
+
+            let dailyTotal = 0, weeklyTotals = {}, weeklyDailyCounts = {};
+
+            data.forEach(row => {
+                let [date, name, role, count] = row;
+                count = parseInt(count) || 0;
+
+                if (!name || !count) return;
+
+                // Daily Report
+                if (date === today) {
+                    let tr = document.createElement('tr');
+                    tr.innerHTML = `<td>${date}</td><td>${name}</td><td>${role}</td><td>${count}</td>`;
+                    dailyTable.appendChild(tr);
+                    dailyTotal += count;
+                }
+
+                // Weekly Data
+                if (lastWeekDates.includes(date)) {
+                    if (!weeklyTotals[name]) weeklyTotals[name] = { role, count: 0 };
+                    weeklyTotals[name].count += count;
+
+                    if (!weeklyDailyCounts[date]) weeklyDailyCounts[date] = 0;
+                    weeklyDailyCounts[date] += count;
+                }
+            });
+
+            // Weekly Report Table
+            for (const name in weeklyTotals) {
+                let tr = document.createElement('tr');
+                tr.innerHTML = `<td>${name}</td><td>${weeklyTotals[name].role}</td><td>${weeklyTotals[name].count}</td>`;
+                weeklyTable.appendChild(tr);
+            }
+
+            // Draw Weekly Graph
+            drawWeeklyGraph(Object.keys(weeklyDailyCounts).reverse(), Object.values(weeklyDailyCounts).reverse());
+        }
+
+        function drawWeeklyGraph(labels, data) {
+            new Chart(document.getElementById('weeklyChart'), {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Registrations per Day',
+                        data: data,
+                        backgroundColor: ['#FF5733', '#33FF57', '#3357FF', '#FF33A8', '#FFAA33', '#33AAFF', '#AA33FF'],
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        loadCSV();
+    </script>
+</body>
+</html>
