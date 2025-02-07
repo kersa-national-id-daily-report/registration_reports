@@ -22,20 +22,21 @@
 
 <h1>Registration Reports</h1>
 
-<!-- Password Section -->
+<!-- Password Protection -->
 <div id="passwordSection">
     <h2>Enter Password to Manage Data</h2>
     <input type="password" id="passwordInput" placeholder="Enter Password">
     <button onclick="checkPassword()">Submit</button>
 </div>
 
-<!-- Protected Section (Only after login) -->
+<!-- Protected Section -->
 <div id="protectedSection" class="hidden">
     <h2>Manage Names</h2>
     <form id="setupForm">
         <input type="text" id="nameInput" placeholder="Enter Name" required>
         <button type="submit">Add</button>
     </form>
+    <ul id="namesList"></ul>
 
     <h2>Enter Daily Registrations</h2>
     <form id="registrationForm">
@@ -49,13 +50,14 @@
     <h2>Upload Daily Images</h2>
     <input type="file" id="imageInput" accept="image/*" multiple>
     <button onclick="uploadImage()">Upload</button>
+    <button onclick="clearImages()">Clear Selected</button>
 </div>
 
-<!-- Slideshow (Visible before login) -->
+<!-- Slideshow -->
 <h2>Daily Images</h2>
 <div class="slideshow-container" id="imageSlideshow"></div>
 
-<!-- Registration Table (Visible before login) -->
+<!-- Registration Table -->
 <h2>All Registrations</h2>
 <table>
     <thead id="tableHeader"></thead>
@@ -150,6 +152,10 @@
         });
 
         alert("Images Uploaded!");
+    }
+
+    function clearImages() {
+        document.getElementById("imageInput").value = "";
     }
 
     function displaySlideshow() {
