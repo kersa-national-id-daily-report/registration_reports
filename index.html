@@ -19,6 +19,8 @@
         canvas { max-width: 100%; display: block; margin: auto; }
         input, select { padding: 8px; margin: 5px; }
         .hidden { display: none; }
+        .slideshow-container { max-width: 500px; position: relative; margin: auto; }
+        .slide { display: none; width: 100%; }
     </style>
 </head>
 <body>
@@ -47,7 +49,15 @@
             <input type="number" id="countInput" placeholder="Registrations" required>
             <button type="submit">Submit</button>
         </form>
+
+        <h2>Upload Daily Images</h2>
+        <input type="file" id="imageInput" accept="image/*">
+        <button onclick="uploadImage()">Upload</button>
     </div>
+
+    <!-- Slideshow for Images -->
+    <h2>Daily Images</h2>
+    <div class="slideshow-container" id="imageSlideshow"></div>
 
     <h2>All Registrations</h2>
     <table>
@@ -69,6 +79,7 @@
                 document.getElementById("protectedSection").classList.remove("hidden");
                 updateDropdown();
                 generateReports();
+                displaySlideshow();
             } else {
                 alert("Incorrect Password!");
             }
@@ -76,7 +87,7 @@
 
         function loadData(key) {
             let data = JSON.parse(localStorage.getItem(key)) || [];
-            return Array.isArray(data) ? data.filter(item => typeof item === "string") : [];
+            return Array.isArray(data) ? data.filter(item => typeof item === "string" || typeof item === "object") : [];
         }
 
         function saveData(key, data) {
@@ -111,26 +122,45 @@
             });
         }
 
-        document.getElementById("registrationForm").addEventListener("submit", function(event) {
-            event.preventDefault();
-            let date = document.getElementById("dateInput").value;
-            let name = document.getElementById("personSelect").value;
-            let count = parseInt(document.getElementById("countInput").value);
-            let editIndex = document.getElementById("editIndex").value;
-            let data = loadData("registrationData");
-
-            if (editIndex) {
-                data[editIndex] = { date, name, count };
-            } else {
-                data.push({ date, name, count });
+        function uploadImage() {
+            let file = document.getElementById("imageInput").files[0];
+            if (!file) {
+                alert("Please select an image.");
+                return;
             }
 
-            saveData("registrationData", data);
-            alert("Data Saved!");
-            document.getElementById("editIndex").value = "";
-            event.target.reset();
-            generateReports();
-        });
+            let reader = new FileReader();
+            reader.onload = function (e) {
+                let images = loadData("uploadedImages");
+                images.push(e.target.result);
+                saveData("uploadedImages", images);
+                alert("Image Uploaded!");
+                displaySlideshow();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function displaySlideshow() {
+            let images = loadData("uploadedImages");
+            let container = document.getElementById("imageSlideshow");
+            container.innerHTML = "";
+
+            images.forEach((src, index) => {
+                let img = document.createElement("img");
+                img.src = src;
+                img.className = "slide";
+                if (index === 0) img.style.display = "block";
+                container.appendChild(img);
+            });
+
+            let index = 0;
+            setInterval(() => {
+                let slides = document.querySelectorAll(".slide");
+                slides.forEach(s => (s.style.display = "none"));
+                slides[index].style.display = "block";
+                index = (index + 1) % slides.length;
+            }, 3000);
+        }
 
         function generateReports() {
             let data = loadData("registrationData");
@@ -146,8 +176,7 @@
 
             let tableHeader = document.getElementById("tableHeader");
             let tableBody = document.getElementById("tableBody");
-
-            tableHeader.innerHTML = `<tr><th>Date</th>${namesList.map(name => `<th>${name}</th>`).join("")}<th>Total</th>${loggedIn ? "<th>Actions</th>" : ""}</tr>`;
+            tableHeader.innerHTML = `<tr><th>Date</th>${namesList.map(name => `<th>${name}</th>`).join("")}<th>Total</th></tr>`;
             tableBody.innerHTML = "";
 
             Object.keys(groupedData).forEach(date => {
@@ -182,16 +211,13 @@
                         data: dates.map(d => dailyCounts[d]),
                         backgroundColor: ["red", "blue", "green", "yellow", "orange"]
                     }]
-                },
-                options: {
-                    responsive: true,
-                    scales: { y: { beginAtZero: true } }
                 }
             });
         }
 
         generateReports();
         updateDropdown();
+        displaySlideshow();
     </script>
 
 </body>
