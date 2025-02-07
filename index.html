@@ -50,13 +50,12 @@
     <h2>Upload Daily Images</h2>
     <input type="file" id="imageInput" accept="image/*" multiple>
     <button onclick="uploadImage()">Upload</button>
-    <button onclick="clearImages()">Clear Selected</button>
+    <button onclick="clearUploadedImages()">Clear Uploaded Images</button>
 </div>
 
 <!-- Slideshow -->
 <h2>Daily Images</h2>
 <div class="slideshow-container" id="imageSlideshow"></div>
-<button onclick="clearUploadedImages()">Clear Uploaded Images</button>
 
 <!-- Registration Table -->
 <h2>All Registrations</h2>
@@ -77,7 +76,6 @@
             loggedIn = true;
             document.getElementById("passwordSection").classList.add("hidden");
             document.getElementById("protectedSection").classList.remove("hidden");
-            updateDropdown();
             generateReports();
             displaySlideshow();
             loadNames();
@@ -105,58 +103,8 @@
         }
 
         alert("Name Added!");
-        updateDropdown();
-        loadNames();
+        generateReports();
     });
-
-    function loadNames() {
-        let namesList = loadData("namesData");
-        let list = document.getElementById("namesList");
-        list.innerHTML = "";
-
-        namesList.forEach((name, index) => {
-            let li = document.createElement("li");
-            li.innerHTML = `${name} 
-                <button onclick="editName(${index})">Edit</button>
-                <button onclick="deleteName(${index})">Delete</button>`;
-            list.appendChild(li);
-        });
-
-        updateDropdown();
-    }
-
-    function editName(index) {
-        let namesList = loadData("namesData");
-        let newName = prompt("Edit Name:", namesList[index]);
-
-        if (newName) {
-            namesList[index] = newName;
-            saveData("namesData", namesList);
-            loadNames();
-            updateDropdown();
-        }
-    }
-
-    function deleteName(index) {
-        let namesList = loadData("namesData");
-        namesList.splice(index, 1);
-        saveData("namesData", namesList);
-        loadNames();
-        updateDropdown();
-    }
-
-    function updateDropdown() {
-        let select = document.getElementById("personSelect");
-        select.innerHTML = `<option value="" disabled selected>Select a Name</option>`;
-        let namesList = loadData("namesData");
-
-        namesList.forEach(name => {
-            let option = document.createElement("option");
-            option.value = name;
-            option.textContent = name;
-            select.appendChild(option);
-        });
-    }
 
     function uploadImage() {
         let files = document.getElementById("imageInput").files;
@@ -179,13 +127,13 @@
         alert("Images Uploaded!");
     }
 
-    function clearImages() {
-        document.getElementById("imageInput").value = "";
-    }
-
     function clearUploadedImages() {
-        localStorage.removeItem("uploadedImages");
-        displaySlideshow();
+        if (loggedIn) {
+            localStorage.removeItem("uploadedImages");
+            displaySlideshow();
+        } else {
+            alert("You must log in to clear images.");
+        }
     }
 
     function displaySlideshow() {
@@ -213,13 +161,43 @@
     function generateReports() {
         let data = loadData("registrationData");
         let namesList = loadData("namesData");
+        let groupedData = {};
         let dailyCounts = {};
 
         data.forEach(({ date, name, count }) => {
+            if (!groupedData[date]) groupedData[date] = {};
+            groupedData[date][name] = (groupedData[date][name] || 0) + count;
             dailyCounts[date] = (dailyCounts[date] || 0) + count;
         });
 
+        let tableHeader = document.getElementById("tableHeader");
+        let tableBody = document.getElementById("tableBody");
+        tableHeader.innerHTML = `<tr><th>Date</th>${namesList.map(name => `<th>${name}</th>`).join("")}<th>Total</th>${loggedIn ? "<th>Actions</th>" : ""}</tr>`;
+        tableBody.innerHTML = "";
+
+        Object.keys(groupedData).forEach(date => {
+            let row = `<td>${date}</td>`;
+            let total = 0;
+            namesList.forEach(name => {
+                let count = groupedData[date][name] || 0;
+                row += `<td>${count}</td>`;
+                total += count;
+            });
+            row += `<td>${total}</td>`;
+            if (loggedIn) {
+                row += `<td><button onclick="deleteEntry('${date}')">Delete</button></td>`;
+            }
+            tableBody.innerHTML += `<tr>${row}</tr>`;
+        });
+
         drawGraphs(dailyCounts);
+    }
+
+    function deleteEntry(date) {
+        let data = loadData("registrationData");
+        data = data.filter(entry => entry.date !== date);
+        saveData("registrationData", data);
+        generateReports();
     }
 
     function drawGraphs(dailyCounts) {
@@ -237,7 +215,6 @@
 
     generateReports();
     displaySlideshow();
-    loadNames();
 </script>
 
 </body>
