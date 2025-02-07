@@ -4,11 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registration Report</title>
-
-    <!-- Chart.js for Graphs -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <!-- Styling -->
     <style>
         body { font-family: Arial, sans-serif; text-align: center; margin: 20px; }
         h1, h2 { color: #333; }
@@ -16,209 +12,228 @@
         th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
         th { background-color: #4CAF50; color: white; }
         button { padding: 5px 10px; margin: 3px; cursor: pointer; }
-        canvas { max-width: 100%; display: block; margin: auto; }
         input, select { padding: 8px; margin: 5px; }
         .hidden { display: none; }
-        .slideshow-container { max-width: 500px; position: relative; margin: auto; }
-        .slide { display: none; width: 100%; }
     </style>
 </head>
 <body>
 
-    <h1>Registration Reports</h1>
+<h1>Registration Reports</h1>
 
-    <!-- Password Protection -->
-    <div id="passwordSection">
-        <h2>Enter Password to Manage Data</h2>
-        <input type="password" id="passwordInput" placeholder="Enter Password">
-        <button onclick="checkPassword()">Submit</button>
-    </div>
+<!-- Password Protection -->
+<div id="passwordSection">
+    <h2>Enter Password to Manage Data</h2>
+    <input type="password" id="passwordInput" placeholder="Enter Password">
+    <button onclick="checkPassword()">Submit</button>
+</div>
 
-    <div id="protectedSection" class="hidden">
-        <h2>Manage Names</h2>
-        <form id="setupForm">
-            <input type="text" id="nameInput" placeholder="Enter Name" required>
-            <button type="submit">Add</button>
-        </form>
+<!-- Protected Section -->
+<div id="protectedSection" class="hidden">
+    <h2>Manage Names</h2>
+    <form id="setupForm">
+        <input type="text" id="nameInput" placeholder="Enter Name" required>
+        <button type="submit">Add</button>
+    </form>
+    <ul id="namesList"></ul> <!-- Names List with Edit & Delete -->
 
-        <h2>Enter Daily Registrations</h2>
-        <form id="registrationForm">
-            <input type="hidden" id="editIndex">
-            <input type="date" id="dateInput" required>
-            <select id="personSelect"></select>
-            <input type="number" id="countInput" placeholder="Registrations" required>
-            <button type="submit">Submit</button>
-        </form>
-
-        <h2>Upload Daily Images</h2>
-        <input type="file" id="imageInput" accept="image/*">
-        <button onclick="uploadImage()">Upload</button>
-    </div>
-
-    <!-- Slideshow for Images -->
-    <h2>Daily Images</h2>
-    <div class="slideshow-container" id="imageSlideshow"></div>
+    <h2>Enter Daily Registrations</h2>
+    <form id="registrationForm">
+        <input type="hidden" id="editIndex">
+        <input type="date" id="dateInput" required>
+        <select id="personSelect"></select>
+        <input type="number" id="countInput" placeholder="Registrations" required>
+        <button type="submit">Submit</button>
+    </form>
 
     <h2>All Registrations</h2>
     <table>
         <thead id="tableHeader"></thead>
         <tbody id="tableBody"></tbody>
     </table>
+</div>
 
-    <h2>Daily Registration Graph</h2>
-    <div id="graphContainer"></div>
+<h2>Daily Registration Graph</h2>
+<div id="graphContainer"></div>
 
-    <script>
-        const PASSWORD = "nationalidgetachew-2009";
-        let loggedIn = false;
+<script>
+    const PASSWORD = "nationalidgetachew-2009";
+    let loggedIn = false;
 
-        function checkPassword() {
-            if (document.getElementById("passwordInput").value === PASSWORD) {
-                loggedIn = true;
-                document.getElementById("passwordSection").classList.add("hidden");
-                document.getElementById("protectedSection").classList.remove("hidden");
-                updateDropdown();
-                generateReports();
-                displaySlideshow();
-            } else {
-                alert("Incorrect Password!");
-            }
-        }
-
-        function loadData(key) {
-            let data = JSON.parse(localStorage.getItem(key)) || [];
-            return Array.isArray(data) ? data.filter(item => typeof item === "string" || typeof item === "object") : [];
-        }
-
-        function saveData(key, data) {
-            localStorage.setItem(key, JSON.stringify(data));
-        }
-
-        document.getElementById("setupForm").addEventListener("submit", function(event) {
-            event.preventDefault();
-            let name = document.getElementById("nameInput").value.trim();
-            let namesList = loadData("namesData");
-
-            if (!namesList.includes(name)) {
-                namesList.push(name);
-                saveData("namesData", namesList);
-            }
-
-            alert("Name Added!");
+    function checkPassword() {
+        if (document.getElementById("passwordInput").value === PASSWORD) {
+            loggedIn = true;
+            document.getElementById("passwordSection").classList.add("hidden");
+            document.getElementById("protectedSection").classList.remove("hidden");
             updateDropdown();
             generateReports();
+            loadNames();
+        } else {
+            alert("Incorrect Password!");
+        }
+    }
+
+    function loadData(key) {
+        return JSON.parse(localStorage.getItem(key)) || [];
+    }
+
+    function saveData(key, data) {
+        localStorage.setItem(key, JSON.stringify(data));
+    }
+
+    document.getElementById("setupForm").addEventListener("submit", function(event) {
+        event.preventDefault();
+        let name = document.getElementById("nameInput").value.trim();
+        let namesList = loadData("namesData");
+
+        if (!namesList.includes(name)) {
+            namesList.push(name);
+            saveData("namesData", namesList);
+        }
+
+        alert("Name Added!");
+        updateDropdown();
+        loadNames();
+    });
+
+    function loadNames() {
+        let namesList = loadData("namesData");
+        let list = document.getElementById("namesList");
+        list.innerHTML = "";
+
+        namesList.forEach((name, index) => {
+            let li = document.createElement("li");
+            li.innerHTML = `${name} 
+                <button onclick="editName(${index})">Edit</button>
+                <button onclick="deleteName(${index})">Delete</button>`;
+            list.appendChild(li);
         });
 
-        function updateDropdown() {
-            let select = document.getElementById("personSelect");
-            select.innerHTML = `<option value="" disabled selected>Select a Name</option>`;
-            let namesList = loadData("namesData");
-
-            namesList.forEach(name => {
-                let option = document.createElement("option");
-                option.value = name;
-                option.textContent = name;
-                select.appendChild(option);
-            });
-        }
-
-        function uploadImage() {
-            let file = document.getElementById("imageInput").files[0];
-            if (!file) {
-                alert("Please select an image.");
-                return;
-            }
-
-            let reader = new FileReader();
-            reader.onload = function (e) {
-                let images = loadData("uploadedImages");
-                images.push(e.target.result);
-                saveData("uploadedImages", images);
-                alert("Image Uploaded!");
-                displaySlideshow();
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function displaySlideshow() {
-            let images = loadData("uploadedImages");
-            let container = document.getElementById("imageSlideshow");
-            container.innerHTML = "";
-
-            images.forEach((src, index) => {
-                let img = document.createElement("img");
-                img.src = src;
-                img.className = "slide";
-                if (index === 0) img.style.display = "block";
-                container.appendChild(img);
-            });
-
-            let index = 0;
-            setInterval(() => {
-                let slides = document.querySelectorAll(".slide");
-                slides.forEach(s => (s.style.display = "none"));
-                slides[index].style.display = "block";
-                index = (index + 1) % slides.length;
-            }, 3000);
-        }
-
-        function generateReports() {
-            let data = loadData("registrationData");
-            let namesList = loadData("namesData");
-            let groupedData = {};
-            let dailyCounts = {};
-
-            data.forEach(({ date, name, count }) => {
-                if (!groupedData[date]) groupedData[date] = {};
-                groupedData[date][name] = count;
-                dailyCounts[date] = (dailyCounts[date] || 0) + count;
-            });
-
-            let tableHeader = document.getElementById("tableHeader");
-            let tableBody = document.getElementById("tableBody");
-            tableHeader.innerHTML = `<tr><th>Date</th>${namesList.map(name => `<th>${name}</th>`).join("")}<th>Total</th></tr>`;
-            tableBody.innerHTML = "";
-
-            Object.keys(groupedData).forEach(date => {
-                let row = `<td>${date}</td>`;
-                let total = 0;
-                namesList.forEach(name => {
-                    let count = groupedData[date][name] || 0;
-                    row += `<td>${count}</td>`;
-                    total += count;
-                });
-                row += `<td>${total}</td>`;
-                tableBody.innerHTML += `<tr>${row}</tr>`;
-            });
-
-            drawGraphs(dailyCounts);
-        }
-
-        function drawGraphs(dailyCounts) {
-            let graphContainer = document.getElementById("graphContainer");
-            graphContainer.innerHTML = "";
-
-            let dates = Object.keys(dailyCounts);
-            let canvas = document.createElement("canvas");
-            graphContainer.appendChild(canvas);
-
-            new Chart(canvas, {
-                type: "bar",
-                data: {
-                    labels: dates,  
-                    datasets: [{
-                        label: "Daily Registrations",
-                        data: dates.map(d => dailyCounts[d]),
-                        backgroundColor: ["red", "blue", "green", "yellow", "orange"]
-                    }]
-                }
-            });
-        }
-
-        generateReports();
         updateDropdown();
-        displaySlideshow();
-    </script>
+    }
+
+    function editName(index) {
+        let namesList = loadData("namesData");
+        let newName = prompt("Edit Name:", namesList[index]);
+
+        if (newName) {
+            namesList[index] = newName;
+            saveData("namesData", namesList);
+            loadNames();
+            updateDropdown();
+        }
+    }
+
+    function deleteName(index) {
+        let namesList = loadData("namesData");
+        namesList.splice(index, 1);
+        saveData("namesData", namesList);
+        loadNames();
+        updateDropdown();
+    }
+
+    function updateDropdown() {
+        let select = document.getElementById("personSelect");
+        select.innerHTML = `<option value="" disabled selected>Select a Name</option>`;
+        let namesList = loadData("namesData");
+
+        namesList.forEach(name => {
+            let option = document.createElement("option");
+            option.value = name;
+            option.textContent = name;
+            select.appendChild(option);
+        });
+    }
+
+    document.getElementById("registrationForm").addEventListener("submit", function(event) {
+        event.preventDefault();
+        let date = document.getElementById("dateInput").value;
+        let name = document.getElementById("personSelect").value;
+        let count = document.getElementById("countInput").value;
+        let index = document.getElementById("editIndex").value;
+
+        let data = loadData("registrationData");
+
+        if (index) {
+            data[index] = { date, name, count };
+        } else {
+            data.push({ date, name, count });
+        }
+
+        saveData("registrationData", data);
+        document.getElementById("editIndex").value = "";
+        alert("Registration Saved!");
+        generateReports();
+    });
+
+    function generateReports() {
+        let data = loadData("registrationData");
+        let namesList = loadData("namesData");
+        let groupedData = {};
+        let dailyCounts = {};
+
+        data.forEach(({ date, name, count }, index) => {
+            if (!groupedData[date]) groupedData[date] = {};
+            groupedData[date][name] = count;
+            dailyCounts[date] = (dailyCounts[date] || 0) + count;
+        });
+
+        let tableHeader = document.getElementById("tableHeader");
+        let tableBody = document.getElementById("tableBody");
+        tableHeader.innerHTML = `<tr><th>Date</th>${namesList.map(name => `<th>${name}</th>`).join("")}<th>Total</th><th>Actions</th></tr>`;
+        tableBody.innerHTML = "";
+
+        data.forEach(({ date, name, count }, index) => {
+            let row = `<td>${date}</td>`;
+            let total = 0;
+
+            namesList.forEach(n => {
+                let value = n === name ? count : 0;
+                row += `<td>${value}</td>`;
+                total += parseInt(value);
+            });
+
+            row += `<td>${total}</td>`;
+            row += `<td>
+                        <button onclick="editRegistration(${index})">Edit</button>
+                        <button onclick="deleteRegistration(${index})">Delete</button>
+                    </td>`;
+
+            tableBody.innerHTML += `<tr>${row}</tr>`;
+        });
+
+        drawGraphs(dailyCounts);
+    }
+
+    function editRegistration(index) {
+        let data = loadData("registrationData");
+        let entry = data[index];
+
+        document.getElementById("dateInput").value = entry.date;
+        document.getElementById("personSelect").value = entry.name;
+        document.getElementById("countInput").value = entry.count;
+        document.getElementById("editIndex").value = index;
+    }
+
+    function deleteRegistration(index) {
+        let data = loadData("registrationData");
+        data.splice(index, 1);
+        saveData("registrationData", data);
+        generateReports();
+    }
+
+    function drawGraphs(dailyCounts) {
+        let graphContainer = document.getElementById("graphContainer");
+        graphContainer.innerHTML = `<canvas id="chartCanvas"></canvas>`;
+
+        new Chart(document.getElementById("chartCanvas"), {
+            type: "bar",
+            data: { labels: Object.keys(dailyCounts), datasets: [{ label: "Registrations", data: Object.values(dailyCounts), backgroundColor: "blue" }] }
+        });
+    }
+
+    loadNames();
+    generateReports();
+</script>
 
 </body>
 </html>
