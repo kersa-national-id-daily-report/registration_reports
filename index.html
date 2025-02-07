@@ -88,13 +88,13 @@
             let namesList = loadData("namesData");
 
             if (!namesList.includes(name)) {
-                namesList.push(name);
+                namesList.push(name);  // Store names as an array of strings
                 saveData("namesData", namesList);
             }
 
             alert("Name Added!");
             updateDropdown();
-            generateReports();
+            generateReports();  
         });
 
         function updateDropdown() {
@@ -131,16 +131,6 @@
             generateReports();
         });
 
-        function deleteEntry(date, name) {
-            if (!loggedIn) return;
-            let data = loadData("registrationData");
-
-            data = data.filter(entry => !(entry.date === date && entry.name === name));
-
-            saveData("registrationData", data);
-            generateReports();
-        }
-
         function generateReports() {
             let data = loadData("registrationData");
             let namesList = loadData("namesData");
@@ -168,9 +158,6 @@
                     total += count;
                 });
                 row += `<td>${total}</td>`;
-                if (loggedIn) {
-                    row += `<td>${namesList.map(name => `<button onclick="deleteEntry('${date}', '${name}')">Delete ${name}</button>`).join(" ")}</td>`;
-                }
                 tableBody.innerHTML += `<tr>${row}</tr>`;
             });
 
