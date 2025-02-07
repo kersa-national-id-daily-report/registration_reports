@@ -34,7 +34,6 @@
         <button onclick="checkPassword()">Submit</button>
     </div>
 
-    <!-- Setup & Entry Forms (Only After Login) -->
     <div id="protectedSection" class="hidden">
         <h2>Manage Names & Roles</h2>
         <form id="setupForm">
@@ -139,33 +138,16 @@
             generateReports();
         });
 
-        function editEntry(index) {
-            if (!loggedIn) return;
-            let data = loadData("registrationData");
-            let entry = data[index];
-
-            document.getElementById("dateInput").value = entry.date;
-            document.getElementById("personSelect").value = entry.name;
-            document.getElementById("countInput").value = entry.count;
-            document.getElementById("editIndex").value = index;
-        }
-
-        function deleteEntry(index) {
-            if (!loggedIn) return;
-            let data = loadData("registrationData");
-            data.splice(index, 1);
-            saveData("registrationData", data);
-            generateReports();
-        }
-
         function generateReports() {
             let data = loadData("registrationData");
             let namesList = loadData("namesData");
             let groupedData = {};
+            let dailyCounts = {};
 
             data.forEach(({ date, name, count }) => {
                 if (!groupedData[date]) groupedData[date] = {};
                 groupedData[date][name] = count;
+                dailyCounts[date] = (dailyCounts[date] || 0) + count;
             });
 
             let tableHeader = document.getElementById("tableHeader");
@@ -189,20 +171,31 @@
                 tableBody.innerHTML += `<tr>${row}</tr>`;
             });
 
-            drawGraphs();
+            drawGraphs(dailyCounts);
         }
 
-        function drawGraphs() {
+        function drawGraphs(dailyCounts) {
             let graphContainer = document.getElementById("graphContainer");
             graphContainer.innerHTML = "";
 
+            let dates = Object.keys(dailyCounts);
             let canvas = document.createElement("canvas");
             graphContainer.appendChild(canvas);
 
             new Chart(canvas, {
                 type: "bar",
-                data: { labels: ["Day 1", "Day 2", "Day 3", "Day 4", "Day 5"], datasets: [{ data: [5, 10, 15, 7, 8], backgroundColor: ["red", "blue", "green", "yellow", "orange"] }] },
-                options: { responsive: true, scales: { y: { beginAtZero: true } } }
+                data: {
+                    labels: dates,  
+                    datasets: [{
+                        label: "Daily Registrations",
+                        data: dates.map(d => dailyCounts[d]),
+                        backgroundColor: ["red", "blue", "green", "yellow", "orange"]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: { y: { beginAtZero: true } }
+                }
             });
         }
 
