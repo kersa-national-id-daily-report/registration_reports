@@ -19,8 +19,6 @@
         canvas { max-width: 100%; display: block; margin: auto; }
         input, select { padding: 8px; margin: 5px; }
         .hidden { display: none; }
-        .slideshow-container { max-width: 500px; position: relative; margin: auto; }
-        .slide { display: none; width: 100%; }
     </style>
 </head>
 <body>
@@ -89,11 +87,14 @@
             let name = document.getElementById("nameInput").value.trim();
             let namesList = loadData("namesData");
 
-            namesList.push(name);
-            saveData("namesData", namesList);
+            if (!namesList.includes(name)) {
+                namesList.push(name);
+                saveData("namesData", namesList);
+            }
 
             alert("Name Added!");
             updateDropdown();
+            generateReports();  // Refresh table to show names
         });
 
         function updateDropdown() {
@@ -130,25 +131,6 @@
             generateReports();
         });
 
-        function editEntry(index) {
-            if (!loggedIn) return;
-            let data = loadData("registrationData");
-            let entry = data[index];
-
-            document.getElementById("dateInput").value = entry.date;
-            document.getElementById("personSelect").value = entry.name;
-            document.getElementById("countInput").value = entry.count;
-            document.getElementById("editIndex").value = index;
-        }
-
-        function deleteEntry(index) {
-            if (!loggedIn) return;
-            let data = loadData("registrationData");
-            data.splice(index, 1);
-            saveData("registrationData", data);
-            generateReports();
-        }
-
         function generateReports() {
             let data = loadData("registrationData");
             let namesList = loadData("namesData");
@@ -163,6 +145,7 @@
 
             let tableHeader = document.getElementById("tableHeader");
             let tableBody = document.getElementById("tableBody");
+
             tableHeader.innerHTML = `<tr><th>Date</th>${namesList.map(name => `<th>${name}</th>`).join("")}<th>Total</th>${loggedIn ? "<th>Actions</th>" : ""}</tr>`;
             tableBody.innerHTML = "";
 
