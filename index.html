@@ -15,68 +15,80 @@
         table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
         th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
         th { background-color: #4CAF50; color: white; }
+        button { padding: 5px 10px; margin: 3px; cursor: pointer; }
         canvas { max-width: 100%; }
-        input, button { padding: 8px; margin: 5px; }
+        input, select { padding: 8px; margin: 5px; }
     </style>
 </head>
 <body>
 
     <h1>Registration Reports</h1>
 
-    <!-- One-time entry for Names and Roles -->
-    <h2>Enter Names & Roles (One-Time Setup)</h2>
-    <form id="setupForm">
-        <input type="text" id="nameInput" placeholder="Enter Name" required>
-        <input type="text" id="roleInput" placeholder="Enter Role" required>
-        <button type="submit">Add</button>
-    </form>
+    <!-- Password Protection -->
+    <div id="passwordSection">
+        <h2>Enter Password to Access Registration</h2>
+        <input type="password" id="passwordInput" placeholder="Enter Password">
+        <button onclick="checkPassword()">Submit</button>
+    </div>
 
-    <h2>Daily Registrations (Supervisor Only)</h2>
-    <form id="registrationForm">
-        <input type="date" id="dateInput" required>
-        <select id="personSelect"></select>
-        <input type="number" id="countInput" placeholder="Registrations" required>
-        <button type="submit">Submit</button>
-    </form>
+    <div id="mainContent" style="display: none;">
+        <h2>Manage Names & Roles (One-Time Setup)</h2>
+        <form id="setupForm">
+            <input type="text" id="nameInput" placeholder="Enter Name" required>
+            <input type="text" id="roleInput" placeholder="Enter Role" required>
+            <button type="submit">Add</button>
+        </form>
 
-    <h2>Daily Report</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th>Name</th>
-                <th>Role</th>
-                <th>Registrations</th>
-            </tr>
-        </thead>
-        <tbody id="dailyReport"></tbody>
-    </table>
+        <h2>Enter Daily Registrations</h2>
+        <form id="registrationForm">
+            <input type="date" id="dateInput" required>
+            <select id="personSelect"></select>
+            <input type="number" id="countInput" placeholder="Registrations" required>
+            <button type="submit">Submit</button>
+        </form>
 
-    <h2>Weekly Registration Graph</h2>
-    <canvas id="weeklyChart"></canvas>
+        <h2>All Registrations</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Name</th>
+                    <th>Role</th>
+                    <th>Registrations</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="allData"></tbody>
+        </table>
 
-    <h2>Monthly Registration Graph</h2>
-    <canvas id="monthlyChart"></canvas>
+        <h2>Weekly Registration Graph</h2>
+        <canvas id="weeklyChart"></canvas>
+
+        <h2>Monthly Registration Graph</h2>
+        <canvas id="monthlyChart"></canvas>
+    </div>
 
     <script>
-        // Load Names & Roles (One-Time Entry)
-        function loadNames() {
-            let storedNames = localStorage.getItem("namesData");
-            return storedNames ? JSON.parse(storedNames) : [];
+        const PASSWORD = "nationalidgetachew-2009";
+
+        function checkPassword() {
+            let inputPassword = document.getElementById("passwordInput").value;
+            if (inputPassword === PASSWORD) {
+                document.getElementById("passwordSection").style.display = "none";
+                document.getElementById("mainContent").style.display = "block";
+                updateDropdown();
+                generateReports();
+            } else {
+                alert("Incorrect Password!");
+            }
         }
 
-        function saveNames(data) {
-            localStorage.setItem("namesData", JSON.stringify(data));
+        function loadData(key) {
+            return JSON.parse(localStorage.getItem(key)) || [];
         }
 
-        // Load Registration Data
-        function loadRegistrations() {
-            let storedData = localStorage.getItem("registrationData");
-            return storedData ? JSON.parse(storedData) : [];
-        }
-
-        function saveRegistrations(data) {
-            localStorage.setItem("registrationData", JSON.stringify(data));
+        function saveData(key, data) {
+            localStorage.setItem(key, JSON.stringify(data));
         }
 
         // Add Name & Role (One-Time)
@@ -84,26 +96,21 @@
             event.preventDefault();
             let name = document.getElementById("nameInput").value.trim();
             let role = document.getElementById("roleInput").value.trim();
+            let namesList = loadData("namesData");
 
-            if (!name || !role) {
-                alert("Please enter valid name and role!");
-                return;
-            }
-
-            let namesList = loadNames();
             namesList.push({ name, role });
-            saveNames(namesList);
+            saveData("namesData", namesList);
 
             alert("Name & Role Added!");
             updateDropdown();
-            document.getElementById("setupForm").reset();
+            event.target.reset();
         });
 
         // Update Dropdown for Registration Input
         function updateDropdown() {
             let select = document.getElementById("personSelect");
             select.innerHTML = "";
-            let namesList = loadNames();
+            let namesList = loadData("namesData");
 
             namesList.forEach(person => {
                 let option = document.createElement("option");
@@ -120,88 +127,81 @@
             let name = document.getElementById("personSelect").value;
             let count = parseInt(document.getElementById("countInput").value);
 
-            if (!date || !name || isNaN(count)) {
-                alert("Please enter valid data!");
-                return;
-            }
-
-            let data = loadRegistrations();
+            let data = loadData("registrationData");
             data.push({ date, name, count });
-            saveRegistrations(data);
-            alert("Data saved!");
-            location.reload();
+            saveData("registrationData", data);
+
+            alert("Data Saved!");
+            generateReports();
         });
 
-        // Generate Reports
+        // Edit & Delete Functions
+        function editEntry(index) {
+            let data = loadData("registrationData");
+            let entry = data[index];
+
+            document.getElementById("dateInput").value = entry.date;
+            document.getElementById("personSelect").value = entry.name;
+            document.getElementById("countInput").value = entry.count;
+
+            data.splice(index, 1);
+            saveData("registrationData", data);
+            generateReports();
+        }
+
+        function deleteEntry(index) {
+            let data = loadData("registrationData");
+            data.splice(index, 1);
+            saveData("registrationData", data);
+            generateReports();
+        }
+
+        // Generate Reports & Graphs
         function generateReports() {
-            let data = loadRegistrations();
-            let dailyTable = document.getElementById("dailyReport");
-            let today = new Date().toISOString().split("T")[0];
+            let data = loadData("registrationData");
+            let table = document.getElementById("allData");
+            table.innerHTML = "";
 
             let weeklyCounts = {}, monthlyCounts = {};
-            let lastWeekDates = Array.from({ length: 7 }, (_, i) => {
-                let d = new Date();
-                d.setDate(d.getDate() - i);
-                return d.toISOString().split("T")[0];
+
+            data.forEach((row, index) => {
+                let { date, name, count } = row;
+                let role = loadData("namesData").find(p => p.name === name)?.role || "Unknown";
+
+                let tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>${date}</td>
+                    <td>${name}</td>
+                    <td>${role}</td>
+                    <td>${count}</td>
+                    <td>
+                        <button onclick="editEntry(${index})">Edit</button>
+                        <button onclick="deleteEntry(${index})">Delete</button>
+                    </td>
+                `;
+                table.appendChild(tr);
+
+                let week = date.slice(0, 10);
+                weeklyCounts[week] = (weeklyCounts[week] || 0) + count;
+
+                let month = date.slice(0, 7);
+                monthlyCounts[month] = (monthlyCounts[month] || 0) + count;
             });
 
-            let lastMonth = new Date();
-            lastMonth.setMonth(lastMonth.getMonth() - 1);
-
-            data.forEach(row => {
-                let date = row.date;
-                let name = row.name;
-                let count = parseInt(row.count) || 0;
-                let role = loadNames().find(p => p.name === name)?.role || "Unknown";
-
-                // Daily Report
-                if (date === today) {
-                    let tr = document.createElement("tr");
-                    tr.innerHTML = `<td>${date}</td><td>${name}</td><td>${role}</td><td>${count}</td>`;
-                    dailyTable.appendChild(tr);
-                }
-
-                // Weekly Report
-                if (lastWeekDates.includes(date)) {
-                    if (!weeklyCounts[date]) weeklyCounts[date] = 0;
-                    weeklyCounts[date] += count;
-                }
-
-                // Monthly Report
-                if (new Date(date) >= lastMonth) {
-                    let monthKey = date.slice(0, 7);
-                    if (!monthlyCounts[monthKey]) monthlyCounts[monthKey] = 0;
-                    monthlyCounts[monthKey] += count;
-                }
-            });
-
-            drawGraph("weeklyChart", Object.keys(weeklyCounts).reverse(), Object.values(weeklyCounts).reverse(), "Registrations Per Day (Weekly)");
+            drawGraph("weeklyChart", Object.keys(weeklyCounts), Object.values(weeklyCounts), "Registrations Per Week");
             drawGraph("monthlyChart", Object.keys(monthlyCounts), Object.values(monthlyCounts), "Registrations Per Month");
         }
 
-        // Draw Graph
+        // Draw Graphs
         function drawGraph(canvasId, labels, data, title) {
             new Chart(document.getElementById(canvasId), {
                 type: "bar",
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: title,
-                        data: data,
-                        backgroundColor: ["#FF5733", "#33FF57", "#3357FF", "#FF33A8", "#FFAA33", "#33AAFF", "#AA33FF"],
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: { beginAtZero: true }
-                    }
-                }
+                data: { labels, datasets: [{ label: title, data, backgroundColor: "#4CAF50" }] },
+                options: { responsive: true, scales: { y: { beginAtZero: true } } }
             });
         }
 
         updateDropdown();
-        generateReports();
     </script>
 
 </body>
