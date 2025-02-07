@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registration Report</title>
     
-    <!-- Chart.js for graphs -->
+    <!-- Chart.js for Graphs -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <!-- Styling -->
@@ -16,11 +16,21 @@
         th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
         th { background-color: #4CAF50; color: white; }
         canvas { max-width: 100%; }
+        input, button { padding: 8px; margin: 5px; }
     </style>
 </head>
 <body>
 
     <h1>Registration Reports</h1>
+
+    <!-- Form for Getachew Dires to input daily registrations -->
+    <h2>Enter Daily Registrations (Supervisor Only)</h2>
+    <form id="registrationForm">
+        <input type="date" id="dateInput" required>
+        <input type="text" id="nameInput" placeholder="Enter Name" required>
+        <input type="number" id="countInput" placeholder="Registrations" required>
+        <button type="submit">Submit</button>
+    </form>
 
     <h2>Daily Report</h2>
     <table>
@@ -28,7 +38,6 @@
             <tr>
                 <th>Date</th>
                 <th>Name</th>
-                <th>Role</th>
                 <th>Registrations</th>
             </tr>
         </thead>
@@ -38,85 +47,97 @@
     <h2>Weekly Registration Graph</h2>
     <canvas id="weeklyChart"></canvas>
 
-    <h2>Weekly Report</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Role</th>
-                <th>Total Weekly Registrations</th>
-            </tr>
-        </thead>
-        <tbody id="weeklyReport"></tbody>
-    </table>
+    <h2>Monthly Registration Graph</h2>
+    <canvas id="monthlyChart"></canvas>
 
     <script>
-        function loadCSV() {
-            fetch('data.csv')
-                .then(response => response.text())
-                .then(csv => {
-                    const rows = csv.split("\n").slice(1).map(line => line.split(","));
-                    processData(rows);
-                });
+        // Function to load data from localStorage or default CSV data
+        function loadData() {
+            let data = localStorage.getItem("registrationData");
+            return data ? JSON.parse(data) : [];
         }
 
-        function processData(data) {
-            const dailyTable = document.getElementById('dailyReport');
-            const weeklyTable = document.getElementById('weeklyReport');
+        // Function to save data to localStorage
+        function saveData(data) {
+            localStorage.setItem("registrationData", JSON.stringify(data));
+        }
 
-            const today = new Date().toISOString().split('T')[0];
-            const lastWeekDates = Array.from({ length: 7 }, (_, i) => {
+        // Function to handle form submission
+        document.getElementById("registrationForm").addEventListener("submit", function (event) {
+            event.preventDefault();
+            
+            let date = document.getElementById("dateInput").value;
+            let name = document.getElementById("nameInput").value.trim();
+            let count = parseInt(document.getElementById("countInput").value);
+
+            if (!date || !name || isNaN(count)) {
+                alert("Please enter valid data!");
+                return;
+            }
+
+            let data = loadData();
+            data.push({ date, name, count });
+            saveData(data);
+            alert("Data saved!");
+            location.reload();
+        });
+
+        // Function to generate reports
+        function generateReports() {
+            let data = loadData();
+            let dailyTable = document.getElementById("dailyReport");
+            let today = new Date().toISOString().split("T")[0];
+
+            let weeklyCounts = {}, monthlyCounts = {};
+            let lastWeekDates = Array.from({ length: 7 }, (_, i) => {
                 let d = new Date();
                 d.setDate(d.getDate() - i);
-                return d.toISOString().split('T')[0];
+                return d.toISOString().split("T")[0];
             });
 
-            let dailyTotal = 0, weeklyTotals = {}, weeklyDailyCounts = {};
+            let lastMonth = new Date();
+            lastMonth.setMonth(lastMonth.getMonth() - 1);
 
             data.forEach(row => {
-                let [date, name, role, count] = row;
-                count = parseInt(count) || 0;
-
-                if (!name || !count) return;
+                let date = row.date;
+                let name = row.name;
+                let count = parseInt(row.count) || 0;
 
                 // Daily Report
                 if (date === today) {
-                    let tr = document.createElement('tr');
-                    tr.innerHTML = `<td>${date}</td><td>${name}</td><td>${role}</td><td>${count}</td>`;
+                    let tr = document.createElement("tr");
+                    tr.innerHTML = `<td>${date}</td><td>${name}</td><td>${count}</td>`;
                     dailyTable.appendChild(tr);
-                    dailyTotal += count;
                 }
 
-                // Weekly Data
+                // Weekly Report
                 if (lastWeekDates.includes(date)) {
-                    if (!weeklyTotals[name]) weeklyTotals[name] = { role, count: 0 };
-                    weeklyTotals[name].count += count;
+                    if (!weeklyCounts[date]) weeklyCounts[date] = 0;
+                    weeklyCounts[date] += count;
+                }
 
-                    if (!weeklyDailyCounts[date]) weeklyDailyCounts[date] = 0;
-                    weeklyDailyCounts[date] += count;
+                // Monthly Report
+                if (new Date(date) >= lastMonth) {
+                    let monthKey = date.slice(0, 7);
+                    if (!monthlyCounts[monthKey]) monthlyCounts[monthKey] = 0;
+                    monthlyCounts[monthKey] += count;
                 }
             });
 
-            // Weekly Report Table
-            for (const name in weeklyTotals) {
-                let tr = document.createElement('tr');
-                tr.innerHTML = `<td>${name}</td><td>${weeklyTotals[name].role}</td><td>${weeklyTotals[name].count}</td>`;
-                weeklyTable.appendChild(tr);
-            }
-
-            // Draw Weekly Graph
-            drawWeeklyGraph(Object.keys(weeklyDailyCounts).reverse(), Object.values(weeklyDailyCounts).reverse());
+            drawGraph("weeklyChart", Object.keys(weeklyCounts).reverse(), Object.values(weeklyCounts).reverse(), "Registrations Per Day (Weekly)");
+            drawGraph("monthlyChart", Object.keys(monthlyCounts), Object.values(monthlyCounts), "Registrations Per Month");
         }
 
-        function drawWeeklyGraph(labels, data) {
-            new Chart(document.getElementById('weeklyChart'), {
-                type: 'bar',
+        // Function to draw graph using Chart.js
+        function drawGraph(canvasId, labels, data, title) {
+            new Chart(document.getElementById(canvasId), {
+                type: "bar",
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: 'Registrations per Day',
+                        label: title,
                         data: data,
-                        backgroundColor: ['#FF5733', '#33FF57', '#3357FF', '#FF33A8', '#FFAA33', '#33AAFF', '#AA33FF'],
+                        backgroundColor: ["#FF5733", "#33FF57", "#3357FF", "#FF33A8", "#FFAA33", "#33AAFF", "#AA33FF"],
                     }]
                 },
                 options: {
@@ -128,7 +149,8 @@
             });
         }
 
-        loadCSV();
+        generateReports();
     </script>
+
 </body>
 </html>
