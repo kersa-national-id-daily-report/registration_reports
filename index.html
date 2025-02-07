@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registration Report</title>
+    <title>ቀርሳ Registration Report</title>
 
     <!-- Chart.js for Graphs -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -25,7 +25,7 @@
 </head>
 <body>
 
-    <h1>Registration Reports</h1>
+    <h1> ቀርሳ Registration Reports</h1>
 
     <!-- Password Protection -->
     <div id="passwordSection">
@@ -34,15 +34,29 @@
         <button onclick="checkPassword()">Submit</button>
     </div>
 
-    <!-- Image Upload (Only After Login) -->
     <div id="protectedSection" class="hidden">
+        <h2>Manage Names & Roles</h2>
+        <form id="setupForm">
+            <input type="text" id="nameInput" placeholder="Enter Name" required>
+            <button type="submit">Add</button>
+        </form>
+
+        <h2>Enter Daily Registrations</h2>
+        <form id="registrationForm">
+            <input type="hidden" id="editIndex">
+            <input type="date" id="dateInput" required>
+            <select id="personSelect"></select>
+            <input type="number" id="countInput" placeholder="Registrations" required>
+            <button type="submit">Submit</button>
+        </form>
+
         <h2>Upload Daily Images</h2>
         <input type="file" id="imageInput" accept="image/*">
         <button onclick="uploadImage()">Upload</button>
     </div>
 
     <!-- Slideshow for Images -->
-    <h2>Daily Images</h2>
+    <h2>ቀርሳ Daily Images</h2>
     <div class="slideshow-container" id="imageSlideshow"></div>
 
     <h2>All Registrations</h2>
@@ -51,7 +65,7 @@
         <tbody id="tableBody"></tbody>
     </table>
 
-    <h2>Daily Registration Graph</h2>
+    <h2>ቀርሳ Daily Registration Graph</h2>
     <div id="graphContainer"></div>
 
     <script>
@@ -63,6 +77,7 @@
                 loggedIn = true;
                 document.getElementById("passwordSection").classList.add("hidden");
                 document.getElementById("protectedSection").classList.remove("hidden");
+                updateDropdown();
                 generateReports();
             } else {
                 alert("Incorrect Password!");
@@ -77,56 +92,51 @@
             localStorage.setItem(key, JSON.stringify(data));
         }
 
-        function uploadImage() {
-            let file = document.getElementById("imageInput").files[0];
-            if (!file) {
-                alert("Please select an image.");
-                return;
-            }
+        document.getElementById("setupForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+            let name = document.getElementById("nameInput").value.trim();
+            let namesList = loadData("namesData");
 
-            let reader = new FileReader();
-            reader.onload = function (e) {
-                let images = loadData("uploadedImages");
-                images.push(e.target.result);
-                saveData("uploadedImages", images);
-                alert("Image Uploaded!");
-                displaySlideshow();
-            };
-            reader.readAsDataURL(file);
-        }
+            namesList.push(name);
+            saveData("namesData", namesList);
 
-        function displaySlideshow() {
-            let images = loadData("uploadedImages");
-            let container = document.getElementById("imageSlideshow");
-            container.innerHTML = "";
+            alert("Name Added!");
+            updateDropdown();
+        });
 
-            images.forEach((src, index) => {
-                let img = document.createElement("img");
-                img.src = src;
-                img.className = "slide";
-                if (index === 0) img.style.display = "block";
-                container.appendChild(img);
+        function updateDropdown() {
+            let select = document.getElementById("personSelect");
+            select.innerHTML = "";
+            let namesList = loadData("namesData");
+
+            namesList.forEach(name => {
+                let option = document.createElement("option");
+                option.value = name;
+                option.textContent = name;
+                select.appendChild(option);
             });
-
-            let index = 0;
-            setInterval(() => {
-                let slides = document.querySelectorAll(".slide");
-                slides.forEach(s => (s.style.display = "none"));
-                slides[index].style.display = "block";
-                index = (index + 1) % slides.length;
-            }, 3000);
         }
+
+        document.getElementById("registrationForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+            let date = document.getElementById("dateInput").value;
+            let name = document.getElementById("personSelect").value;
+            let count = parseInt(document.getElementById("countInput").value);
+            let data = loadData("registrationData");
+
+            data.push({ date, name, count });
+            saveData("registrationData", data);
+            generateReports();
+        });
 
         function generateReports() {
             let data = loadData("registrationData");
-            let namesList = loadData("namesData").map(p => p.name);
+            let namesList = loadData("namesData");
             let groupedData = {};
-            let dailyCounts = {};
 
             data.forEach(({ date, name, count }) => {
                 if (!groupedData[date]) groupedData[date] = {};
-                groupedData[date][name] = (groupedData[date][name] || 0) + count;
-                dailyCounts[date] = (dailyCounts[date] || 0) + count;
+                groupedData[date][name] = count;
             });
 
             let tableHeader = document.getElementById("tableHeader");
@@ -136,58 +146,34 @@
 
             Object.keys(groupedData).forEach(date => {
                 let row = `<td>${date}</td>`;
-                namesList.forEach(name => row += `<td>${groupedData[date][name] || 0}</td>`);
-                row += `<td>${dailyCounts[date] || 0}</td>`;
+                let total = 0;
+                namesList.forEach(name => {
+                    let count = groupedData[date][name] || 0;
+                    row += `<td>${count}</td>`;
+                    total += count;
+                });
+                row += `<td>${total}</td>`;
                 tableBody.innerHTML += `<tr>${row}</tr>`;
             });
 
-            drawGraphs(dailyCounts);
+            drawGraphs();
         }
 
-        function drawGraphs(dailyCounts) {
+        function drawGraphs() {
             let graphContainer = document.getElementById("graphContainer");
             graphContainer.innerHTML = "";
 
-            let dates = Object.keys(dailyCounts);
-            let colors = ["#FF5733", "#33FF57", "#3357FF", "#FF33A1", "#33FFF9", "#FFA833", "#A133FF"];
+            let canvas = document.createElement("canvas");
+            graphContainer.appendChild(canvas);
 
-            for (let i = 0; i < dates.length; i += 5) {
-                let dateChunk = dates.slice(i, i + 5);
-                let canvas = document.createElement("canvas");
-                canvas.id = `chart${i}`;
-                graphContainer.appendChild(canvas);
-
-                let datasetColors = dateChunk.map((_, index) => colors[index % colors.length]);
-                drawGraph(canvas.id, dateChunk, dateChunk.map(d => dailyCounts[d]), " ቀርሳ Daily Registrations", datasetColors);
-            }
-        }
-
-        function drawGraph(canvasId, labels, data, title, colors) {
-            new Chart(document.getElementById(canvasId), {
+            new Chart(canvas, {
                 type: "bar",
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: title,
-                        data: data,
-                        backgroundColor: colors,
-                        borderColor: "#000",
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: { y: { beginAtZero: true } },
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: { enabled: true }
-                    }
-                }
+                data: { labels: ["Day 1", "Day 2", "Day 3", "Day 4", "Day 5"], datasets: [{ data: [5, 10, 15, 7, 8], backgroundColor: ["red", "blue", "green", "yellow", "orange"] }] },
+                options: { responsive: true, scales: { y: { beginAtZero: true } } }
             });
         }
 
         generateReports();
-        displaySlideshow();
     </script>
 
 </body>
