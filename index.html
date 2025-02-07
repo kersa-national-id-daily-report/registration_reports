@@ -24,15 +24,26 @@
 
     <h1>Registration Reports</h1>
 
-    <!-- Password Protection -->
+    <!-- Password Protection for Setup & Data Entry -->
     <div id="passwordSection">
-        <h2>Enter Password to Access Registration</h2>
+        <h2>Enter Password to Manage Data</h2>
         <input type="password" id="passwordInput" placeholder="Enter Password">
         <button onclick="checkPassword()">Submit</button>
     </div>
 
-    <div id="mainContent" style="display: none;">
-        <h2>Manage Names & Roles (One-Time Setup)</h2>
+    <div id="dataSection">
+        <h2>All Registrations</h2>
+        <table>
+            <thead id="tableHeader"></thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+
+        <h2>Daily Registration Graph</h2>
+        <canvas id="dailyChart"></canvas>
+    </div>
+
+    <div id="protectedSection" style="display: none;">
+        <h2>Manage Names & Roles</h2>
         <form id="setupForm">
             <input type="text" id="nameInput" placeholder="Enter Name" required>
             <input type="text" id="roleInput" placeholder="Enter Role" required>
@@ -46,26 +57,6 @@
             <input type="number" id="countInput" placeholder="Registrations" required>
             <button type="submit">Submit</button>
         </form>
-
-        <h2>All Registrations</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Name</th>
-                    <th>Role</th>
-                    <th>Registrations</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody id="allData"></tbody>
-        </table>
-
-        <h2>Weekly Registration Graph</h2>
-        <canvas id="weeklyChart"></canvas>
-
-        <h2>Monthly Registration Graph</h2>
-        <canvas id="monthlyChart"></canvas>
     </div>
 
     <script>
@@ -75,7 +66,7 @@
             let inputPassword = document.getElementById("passwordInput").value;
             if (inputPassword === PASSWORD) {
                 document.getElementById("passwordSection").style.display = "none";
-                document.getElementById("mainContent").style.display = "block";
+                document.getElementById("protectedSection").style.display = "block";
                 updateDropdown();
                 generateReports();
             } else {
@@ -135,73 +126,66 @@
             generateReports();
         });
 
-        // Edit & Delete Functions
-        function editEntry(index) {
-            let data = loadData("registrationData");
-            let entry = data[index];
-
-            document.getElementById("dateInput").value = entry.date;
-            document.getElementById("personSelect").value = entry.name;
-            document.getElementById("countInput").value = entry.count;
-
-            data.splice(index, 1);
-            saveData("registrationData", data);
-            generateReports();
-        }
-
-        function deleteEntry(index) {
-            let data = loadData("registrationData");
-            data.splice(index, 1);
-            saveData("registrationData", data);
-            generateReports();
-        }
-
         // Generate Reports & Graphs
         function generateReports() {
             let data = loadData("registrationData");
-            let table = document.getElementById("allData");
-            table.innerHTML = "";
+            let namesList = loadData("namesData").map(p => p.name);
 
-            let weeklyCounts = {}, monthlyCounts = {};
+            let groupedData = {};
+            let weeklyCounts = {}, monthlyCounts = {}, dailyCounts = {};
 
-            data.forEach((row, index) => {
-                let { date, name, count } = row;
-                let role = loadData("namesData").find(p => p.name === name)?.role || "Unknown";
-
-                let tr = document.createElement("tr");
-                tr.innerHTML = `
-                    <td>${date}</td>
-                    <td>${name}</td>
-                    <td>${role}</td>
-                    <td>${count}</td>
-                    <td>
-                        <button onclick="editEntry(${index})">Edit</button>
-                        <button onclick="deleteEntry(${index})">Delete</button>
-                    </td>
-                `;
-                table.appendChild(tr);
-
+            data.forEach(({ date, name, count }) => {
+                if (!groupedData[date]) groupedData[date] = {};
+                groupedData[date][name] = (groupedData[date][name] || 0) + count;
+                
                 let week = date.slice(0, 10);
-                weeklyCounts[week] = (weeklyCounts[week] || 0) + count;
-
                 let month = date.slice(0, 7);
+                weeklyCounts[week] = (weeklyCounts[week] || 0) + count;
                 monthlyCounts[month] = (monthlyCounts[month] || 0) + count;
+                dailyCounts[date] = (dailyCounts[date] || 0) + count;
             });
 
-            drawGraph("weeklyChart", Object.keys(weeklyCounts), Object.values(weeklyCounts), "Registrations Per Week");
-            drawGraph("monthlyChart", Object.keys(monthlyCounts), Object.values(monthlyCounts), "Registrations Per Month");
+            // Update Table
+            let tableHeader = document.getElementById("tableHeader");
+            let tableBody = document.getElementById("tableBody");
+            tableHeader.innerHTML = "<tr><th>Date</th>" + namesList.map(name => `<th>${name}</th>`).join("") + "<th>Daily Total</th><th>Weekly Total</th><th>Monthly Total</th></tr>";
+            tableBody.innerHTML = "";
+
+            Object.keys(groupedData).forEach(date => {
+                let row = `<td>${date}</td>`;
+                namesList.forEach(name => row += `<td>${groupedData[date][name] || 0}</td>`);
+                row += `<td>${dailyCounts[date] || 0}</td>`;
+                row += `<td>${weeklyCounts[date] || 0}</td>`;
+                row += `<td>${monthlyCounts[date] || 0}</td>`;
+                tableBody.innerHTML += `<tr>${row}</tr>`;
+            });
+
+            drawGraph("dailyChart", Object.keys(dailyCounts), Object.values(dailyCounts), "Daily Registrations", ["#FF5733", "#33FF57", "#3357FF"]);
         }
 
         // Draw Graphs
-        function drawGraph(canvasId, labels, data, title) {
-            new Chart(document.getElementById(canvasId), {
+        function drawGraph(canvasId, labels, data, title, colors) {
+            let ctx = document.getElementById(canvasId).getContext("2d");
+            new Chart(ctx, {
                 type: "bar",
-                data: { labels, datasets: [{ label: title, data, backgroundColor: "#4CAF50" }] },
-                options: { responsive: true, scales: { y: { beginAtZero: true } } }
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: title,
+                        data: data,
+                        backgroundColor: colors,
+                        borderColor: "#333",
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: { y: { beginAtZero: true } }
+                }
             });
         }
 
-        updateDropdown();
+        generateReports();
     </script>
 
 </body>
