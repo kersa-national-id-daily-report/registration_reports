@@ -35,7 +35,7 @@
     </div>
 
     <div id="protectedSection" class="hidden">
-        <h2>Manage Names & Roles</h2>
+        <h2>Manage Names</h2>
         <form id="setupForm">
             <input type="text" id="nameInput" placeholder="Enter Name" required>
             <button type="submit">Add</button>
@@ -49,15 +49,7 @@
             <input type="number" id="countInput" placeholder="Registrations" required>
             <button type="submit">Submit</button>
         </form>
-
-        <h2>Upload Daily Images</h2>
-        <input type="file" id="imageInput" accept="image/*">
-        <button onclick="uploadImage()">Upload</button>
     </div>
-
-    <!-- Slideshow for Images -->
-    <h2>Daily Images</h2>
-    <div class="slideshow-container" id="imageSlideshow"></div>
 
     <h2>All Registrations</h2>
     <table>
@@ -137,6 +129,25 @@
             event.target.reset();
             generateReports();
         });
+
+        function editEntry(index) {
+            if (!loggedIn) return;
+            let data = loadData("registrationData");
+            let entry = data[index];
+
+            document.getElementById("dateInput").value = entry.date;
+            document.getElementById("personSelect").value = entry.name;
+            document.getElementById("countInput").value = entry.count;
+            document.getElementById("editIndex").value = index;
+        }
+
+        function deleteEntry(index) {
+            if (!loggedIn) return;
+            let data = loadData("registrationData");
+            data.splice(index, 1);
+            saveData("registrationData", data);
+            generateReports();
+        }
 
         function generateReports() {
             let data = loadData("registrationData");
