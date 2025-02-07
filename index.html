@@ -56,6 +56,7 @@
 <!-- Slideshow -->
 <h2>Daily Images</h2>
 <div class="slideshow-container" id="imageSlideshow"></div>
+<button onclick="clearUploadedImages()">Clear Uploaded Images</button>
 
 <!-- Registration Table -->
 <h2>All Registrations</h2>
@@ -79,6 +80,7 @@
             updateDropdown();
             generateReports();
             displaySlideshow();
+            loadNames();
         } else {
             alert("Incorrect Password!");
         }
@@ -104,8 +106,44 @@
 
         alert("Name Added!");
         updateDropdown();
-        generateReports();
+        loadNames();
     });
+
+    function loadNames() {
+        let namesList = loadData("namesData");
+        let list = document.getElementById("namesList");
+        list.innerHTML = "";
+
+        namesList.forEach((name, index) => {
+            let li = document.createElement("li");
+            li.innerHTML = `${name} 
+                <button onclick="editName(${index})">Edit</button>
+                <button onclick="deleteName(${index})">Delete</button>`;
+            list.appendChild(li);
+        });
+
+        updateDropdown();
+    }
+
+    function editName(index) {
+        let namesList = loadData("namesData");
+        let newName = prompt("Edit Name:", namesList[index]);
+
+        if (newName) {
+            namesList[index] = newName;
+            saveData("namesData", namesList);
+            loadNames();
+            updateDropdown();
+        }
+    }
+
+    function deleteName(index) {
+        let namesList = loadData("namesData");
+        namesList.splice(index, 1);
+        saveData("namesData", namesList);
+        loadNames();
+        updateDropdown();
+    }
 
     function updateDropdown() {
         let select = document.getElementById("personSelect");
@@ -119,19 +157,6 @@
             select.appendChild(option);
         });
     }
-
-    document.getElementById("registrationForm").addEventListener("submit", function(event) {
-        event.preventDefault();
-        let date = document.getElementById("dateInput").value;
-        let name = document.getElementById("personSelect").value;
-        let count = parseInt(document.getElementById("countInput").value);
-        let data = loadData("registrationData");
-
-        data.push({ date, name, count });
-        saveData("registrationData", data);
-        alert("Data Saved!");
-        generateReports();
-    });
 
     function uploadImage() {
         let files = document.getElementById("imageInput").files;
@@ -156,6 +181,11 @@
 
     function clearImages() {
         document.getElementById("imageInput").value = "";
+    }
+
+    function clearUploadedImages() {
+        localStorage.removeItem("uploadedImages");
+        displaySlideshow();
     }
 
     function displaySlideshow() {
@@ -183,30 +213,10 @@
     function generateReports() {
         let data = loadData("registrationData");
         let namesList = loadData("namesData");
-        let groupedData = {};
         let dailyCounts = {};
 
         data.forEach(({ date, name, count }) => {
-            if (!groupedData[date]) groupedData[date] = {};
-            groupedData[date][name] = count;
             dailyCounts[date] = (dailyCounts[date] || 0) + count;
-        });
-
-        let tableHeader = document.getElementById("tableHeader");
-        let tableBody = document.getElementById("tableBody");
-        tableHeader.innerHTML = `<tr><th>Date</th>${namesList.map(name => `<th>${name}</th>`).join("")}<th>Total</th></tr>`;
-        tableBody.innerHTML = "";
-
-        Object.keys(groupedData).forEach(date => {
-            let row = `<td>${date}</td>`;
-            let total = 0;
-            namesList.forEach(name => {
-                let count = groupedData[date][name] || 0;
-                row += `<td>${count}</td>`;
-                total += count;
-            });
-            row += `<td>${total}</td>`;
-            tableBody.innerHTML += `<tr>${row}</tr>`;
         });
 
         drawGraphs(dailyCounts);
@@ -227,6 +237,7 @@
 
     generateReports();
     displaySlideshow();
+    loadNames();
 </script>
 
 </body>
