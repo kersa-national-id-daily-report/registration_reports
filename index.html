@@ -176,59 +176,8 @@
             }
         }
 
-        function drawGraph(canvasId, labels, data) {
-            new Chart(document.getElementById(canvasId), { type: "bar", data: { labels, datasets: [{ data }]
-
-drawGraph(canvas.id, dates.slice(i, i + 5), dates.slice(i, i + 5).map(d => dailyCounts[d]), "Daily Registrations");
-            }
-        }
-
-        function drawGraph(canvasId, labels, data, title) {
-            new Chart(document.getElementById(canvasId), {
-                type: "bar",
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: title,
-                        data: data,
-                        backgroundColor: ["#FF5733", "#33FF57", "#3357FF", "#FF33A1", "#33FFF9"],
-                        borderColor: "#000",
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: { y: { beginAtZero: true } },
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: { enabled: true }
-                    }
-                }
-            });
-        }
-
-        function editEntry(index) {
-            if (!loggedIn) return;
-            let data = loadData("registrationData")[index];
-            document.getElementById("dateInput").value = data.date;
-            document.getElementById("personSelect").value = data.name;
-            document.getElementById("countInput").value = data.count;
-            document.getElementById("editIndex").value = index;
-        }
-
-        function deleteEntry(index) {
-            if (!loggedIn) return;
-            let data = loadData("registrationData");
-            data.splice(index, 1);
-            saveData("registrationData", data);
-            generateReports();
-        }
-
         generateReports();
     </script>
 
 </body>
 </html>
-
-
-        
