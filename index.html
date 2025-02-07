@@ -16,15 +16,17 @@
         th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
         th { background-color: #4CAF50; color: white; }
         button { padding: 5px 10px; margin: 3px; cursor: pointer; }
-        canvas { max-width: 100%; }
+        canvas { max-width: 100%; display: block; margin: auto; }
         input, select { padding: 8px; margin: 5px; }
+        .graph-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+        .graph-container canvas { width: 45%; min-width: 300px; }
     </style>
 </head>
 <body>
 
     <h1>Registration Reports</h1>
 
-    <!-- Password Protection for Setup & Data Entry -->
+    <!-- Password Protection for Actions -->
     <div id="passwordSection">
         <h2>Enter Password to Manage Data</h2>
         <input type="password" id="passwordInput" placeholder="Enter Password">
@@ -39,7 +41,7 @@
         </table>
 
         <h2>Daily Registration Graph</h2>
-        <canvas id="dailyChart"></canvas>
+        <div class="graph-container" id="graphContainer"></div>
     </div>
 
     <div id="protectedSection" style="display: none;">
@@ -61,10 +63,12 @@
 
     <script>
         const PASSWORD = "nationalidgetachew-2009";
+        let loggedIn = false;
 
         function checkPassword() {
             let inputPassword = document.getElementById("passwordInput").value;
             if (inputPassword === PASSWORD) {
+                loggedIn = true;
                 document.getElementById("passwordSection").style.display = "none";
                 document.getElementById("protectedSection").style.display = "block";
                 updateDropdown();
@@ -132,38 +136,50 @@
             let namesList = loadData("namesData").map(p => p.name);
 
             let groupedData = {};
-            let weeklyCounts = {}, monthlyCounts = {}, dailyCounts = {};
+            let dailyCounts = {};
 
             data.forEach(({ date, name, count }) => {
                 if (!groupedData[date]) groupedData[date] = {};
                 groupedData[date][name] = (groupedData[date][name] || 0) + count;
-                
-                let week = date.slice(0, 10);
-                let month = date.slice(0, 7);
-                weeklyCounts[week] = (weeklyCounts[week] || 0) + count;
-                monthlyCounts[month] = (monthlyCounts[month] || 0) + count;
                 dailyCounts[date] = (dailyCounts[date] || 0) + count;
             });
 
             // Update Table
             let tableHeader = document.getElementById("tableHeader");
             let tableBody = document.getElementById("tableBody");
-            tableHeader.innerHTML = "<tr><th>Date</th>" + namesList.map(name => `<th>${name}</th>`).join("") + "<th>Daily Total</th><th>Weekly Total</th><th>Monthly Total</th></tr>";
+            tableHeader.innerHTML = "<tr><th>Date</th>" + namesList.map(name => `<th>${name}</th>`).join("") + "<th>Total</th></tr>";
             tableBody.innerHTML = "";
 
             Object.keys(groupedData).forEach(date => {
                 let row = `<td>${date}</td>`;
                 namesList.forEach(name => row += `<td>${groupedData[date][name] || 0}</td>`);
                 row += `<td>${dailyCounts[date] || 0}</td>`;
-                row += `<td>${weeklyCounts[date] || 0}</td>`;
-                row += `<td>${monthlyCounts[date] || 0}</td>`;
                 tableBody.innerHTML += `<tr>${row}</tr>`;
             });
 
-            drawGraph("dailyChart", Object.keys(dailyCounts), Object.values(dailyCounts), "Daily Registrations", ["#FF5733", "#33FF57", "#3357FF"]);
+            drawGraphs(dailyCounts);
         }
 
-        // Draw Graphs
+        // Draw Graphs in 5-day-per-row format
+        function drawGraphs(dailyCounts) {
+            let graphContainer = document.getElementById("graphContainer");
+            graphContainer.innerHTML = "";
+
+            let dates = Object.keys(dailyCounts);
+            let chunks = [];
+            for (let i = 0; i < dates.length; i += 5) {
+                chunks.push(dates.slice(i, i + 5));
+            }
+
+            chunks.forEach((dateChunk, index) => {
+                let canvas = document.createElement("canvas");
+                canvas.id = `chart${index}`;
+                graphContainer.appendChild(canvas);
+                drawGraph(canvas.id, dateChunk, dateChunk.map(d => dailyCounts[d]), "Daily Registrations", ["#FF5733", "#33FF57", "#3357FF", "#FF33A1", "#33FFF9"]);
+            });
+        }
+
+        // Draw Individual Graph
         function drawGraph(canvasId, labels, data, title, colors) {
             let ctx = document.getElementById(canvasId).getContext("2d");
             new Chart(ctx, {
