@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registration Report</title>
-    
+
     <!-- Chart.js for Graphs -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
+
     <!-- Styling -->
     <style>
         body { font-family: Arial, sans-serif; text-align: center; margin: 20px; }
@@ -23,11 +23,18 @@
 
     <h1>Registration Reports</h1>
 
-    <!-- Form for Getachew Dires to input daily registrations -->
-    <h2>Enter Daily Registrations (Supervisor Only)</h2>
+    <!-- One-time entry for Names and Roles -->
+    <h2>Enter Names & Roles (One-Time Setup)</h2>
+    <form id="setupForm">
+        <input type="text" id="nameInput" placeholder="Enter Name" required>
+        <input type="text" id="roleInput" placeholder="Enter Role" required>
+        <button type="submit">Add</button>
+    </form>
+
+    <h2>Daily Registrations (Supervisor Only)</h2>
     <form id="registrationForm">
         <input type="date" id="dateInput" required>
-        <input type="text" id="nameInput" placeholder="Enter Name" required>
+        <select id="personSelect"></select>
         <input type="number" id="countInput" placeholder="Registrations" required>
         <button type="submit">Submit</button>
     </form>
@@ -38,6 +45,7 @@
             <tr>
                 <th>Date</th>
                 <th>Name</th>
+                <th>Role</th>
                 <th>Registrations</th>
             </tr>
         </thead>
@@ -51,23 +59,65 @@
     <canvas id="monthlyChart"></canvas>
 
     <script>
-        // Function to load data from localStorage or default CSV data
-        function loadData() {
-            let data = localStorage.getItem("registrationData");
-            return data ? JSON.parse(data) : [];
+        // Load Names & Roles (One-Time Entry)
+        function loadNames() {
+            let storedNames = localStorage.getItem("namesData");
+            return storedNames ? JSON.parse(storedNames) : [];
         }
 
-        // Function to save data to localStorage
-        function saveData(data) {
+        function saveNames(data) {
+            localStorage.setItem("namesData", JSON.stringify(data));
+        }
+
+        // Load Registration Data
+        function loadRegistrations() {
+            let storedData = localStorage.getItem("registrationData");
+            return storedData ? JSON.parse(storedData) : [];
+        }
+
+        function saveRegistrations(data) {
             localStorage.setItem("registrationData", JSON.stringify(data));
         }
 
-        // Function to handle form submission
-        document.getElementById("registrationForm").addEventListener("submit", function (event) {
+        // Add Name & Role (One-Time)
+        document.getElementById("setupForm").addEventListener("submit", function(event) {
             event.preventDefault();
-            
-            let date = document.getElementById("dateInput").value;
             let name = document.getElementById("nameInput").value.trim();
+            let role = document.getElementById("roleInput").value.trim();
+
+            if (!name || !role) {
+                alert("Please enter valid name and role!");
+                return;
+            }
+
+            let namesList = loadNames();
+            namesList.push({ name, role });
+            saveNames(namesList);
+
+            alert("Name & Role Added!");
+            updateDropdown();
+            document.getElementById("setupForm").reset();
+        });
+
+        // Update Dropdown for Registration Input
+        function updateDropdown() {
+            let select = document.getElementById("personSelect");
+            select.innerHTML = "";
+            let namesList = loadNames();
+
+            namesList.forEach(person => {
+                let option = document.createElement("option");
+                option.value = person.name;
+                option.textContent = `${person.name} (${person.role})`;
+                select.appendChild(option);
+            });
+        }
+
+        // Add Daily Registrations
+        document.getElementById("registrationForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+            let date = document.getElementById("dateInput").value;
+            let name = document.getElementById("personSelect").value;
             let count = parseInt(document.getElementById("countInput").value);
 
             if (!date || !name || isNaN(count)) {
@@ -75,16 +125,16 @@
                 return;
             }
 
-            let data = loadData();
+            let data = loadRegistrations();
             data.push({ date, name, count });
-            saveData(data);
+            saveRegistrations(data);
             alert("Data saved!");
             location.reload();
         });
 
-        // Function to generate reports
+        // Generate Reports
         function generateReports() {
-            let data = loadData();
+            let data = loadRegistrations();
             let dailyTable = document.getElementById("dailyReport");
             let today = new Date().toISOString().split("T")[0];
 
@@ -102,11 +152,12 @@
                 let date = row.date;
                 let name = row.name;
                 let count = parseInt(row.count) || 0;
+                let role = loadNames().find(p => p.name === name)?.role || "Unknown";
 
                 // Daily Report
                 if (date === today) {
                     let tr = document.createElement("tr");
-                    tr.innerHTML = `<td>${date}</td><td>${name}</td><td>${count}</td>`;
+                    tr.innerHTML = `<td>${date}</td><td>${name}</td><td>${role}</td><td>${count}</td>`;
                     dailyTable.appendChild(tr);
                 }
 
@@ -128,7 +179,7 @@
             drawGraph("monthlyChart", Object.keys(monthlyCounts), Object.values(monthlyCounts), "Registrations Per Month");
         }
 
-        // Function to draw graph using Chart.js
+        // Draw Graph
         function drawGraph(canvasId, labels, data, title) {
             new Chart(document.getElementById(canvasId), {
                 type: "bar",
@@ -149,6 +200,7 @@
             });
         }
 
+        updateDropdown();
         generateReports();
     </script>
 
