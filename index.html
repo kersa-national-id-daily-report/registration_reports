@@ -116,6 +116,97 @@
             generateReports();
         });
 
+        function generateReports() {
+            let data = loadData("registrationData");
+            let namesList = loadData("namesData").map(p => p.name);
+            let groupedData = {};
+            let dailyCounts = {}, weeklyCounts = {}, monthlyCounts = {};
+
+            data.forEach(({ date, name, count }) => {
+                if (!groupedData[date]) groupedData[date] = {};
+                groupedData[date][name] = (groupedData[date][name] || 0) + count;
+                dailyCounts[date] = (dailyCounts[date] || 0) + count;
+
+                let week = date.slice(0, 10);
+                let month = date.slice(0, 7);
+                weeklyCounts[week] = (weeklyCounts[week] || 0) + count;
+                monthlyCounts[month] = (monthlyCounts[month] || 0) + count;
+            });
+
+            let tableHeader = document.getElementById("tableHeader");
+            let tableBody = document.getElementById("tableBody");
+            tableHeader.innerHTML = "<tr><th>Date</th><th>Name</th><th>Registrations</th><th>Daily Total</th><th>Weekly Total</th><th>Monthly Total</th>" + 
+                                    (loggedIn ? "<th>Actions</th>" : "") + "</tr>";
+            tableBody.innerHTML = "";
+
+            Object.keys(groupedData).forEach(date => {
+                namesList.forEach(name => {
+                    let count = groupedData[date][name] || 0;
+                    let dailyTotal = dailyCounts[date] || 0;
+                    let week = date.slice(0, 10);
+                    let month = date.slice(0, 7);
+                    let weeklyTotal = weeklyCounts[week] || 0;
+                    let monthlyTotal = monthlyCounts[month] || 0;
+
+                    let row = `<td>${date}</td><td>${name}</td><td>${count}</td>
+                               <td>${dailyTotal}</td><td>${weeklyTotal}</td><td>${monthlyTotal}</td>`;
+
+                    if (loggedIn) {
+                        row += `<td><button onclick="editEntry(${index})">Edit</button> 
+                                    <button onclick="deleteEntry(${index})">Delete</button></td>`;
+                    }
+
+                    tableBody.innerHTML += `<tr>${row}</tr>`;
+                });
+            });
+
+            drawGraphs(dailyCounts);
+        }
+
+        function drawGraphs(dailyCounts) {
+            let graphContainer = document.getElementById("graphContainer");
+            graphContainer.innerHTML = "";
+
+            let dates = Object.keys(dailyCounts);
+            for (let i = 0; i < dates.length; i += 5) {
+                let canvas = document.createElement("canvas");
+                canvas.id = `chart${i}`;
+                graphContainer.appendChild(canvas);
+                drawGraph(canvas.id, dates.slice(i, i + 5), dates.slice(i, i + 5).map(d => dailyCounts[d]));
+            }
+        }
+
+        function drawGraph(canvasId, labels, data) {
+            new Chart(document.getElementById(canvasId), { type: "bar", data: { labels, datasets: [{ data }]
+
+drawGraph(canvas.id, dates.slice(i, i + 5), dates.slice(i, i + 5).map(d => dailyCounts[d]), "Daily Registrations");
+            }
+        }
+
+        function drawGraph(canvasId, labels, data, title) {
+            new Chart(document.getElementById(canvasId), {
+                type: "bar",
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: title,
+                        data: data,
+                        backgroundColor: ["#FF5733", "#33FF57", "#3357FF", "#FF33A1", "#33FFF9"],
+                        borderColor: "#000",
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: { y: { beginAtZero: true } },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { enabled: true }
+                    }
+                }
+            });
+        }
+
         function editEntry(index) {
             if (!loggedIn) return;
             let data = loadData("registrationData")[index];
@@ -133,89 +224,11 @@
             generateReports();
         }
 
-        function generateReports() {
-            let data = loadData("registrationData");
-            let groupedData = {};
-            let dailyCounts = {}, weeklyCounts = {}, monthlyCounts = {};
-
-            data.forEach(({ date, name, count }) => {
-                if (!groupedData[date]) groupedData[date] = {};
-                groupedData[date][name] = (groupedData[date][name] || 0) + count;
-                dailyCounts[date] = (dailyCounts[date] || 0) + count;
-                let month = date.slice(0, 7);
-                monthlyCounts[month] = (monthlyCounts[month] || 0) + count;
-            });
-
-           let tableHeader = document.getElementById("tableHeader");
-            let tableBody = document.getElementById("tableBody");
-            tableHeader.innerHTML = "<tr><th>Date</th><th>Name</th><th>Registrations</th><th>Daily Total</th><th>Monthly Total</th>" + 
-                                    (loggedIn ? "<th>Actions</th>" : "") + "</tr>";
-            tableBody.innerHTML = "";
-
-            Object.keys(groupedData).forEach((date, index) => {
-                let dailyTotal = dailyCounts[date] || 0;
-                let month = date.slice(0, 7);
-                let monthlyTotal = monthlyCounts[month] || 0;
-
-                let row = `<td>${date}</td><td>${Object.keys(groupedData[date]).join(", ")}</td>
-                           <td>${Object.values(groupedData[date]).join(", ")}</td>
-                           <td>${dailyTotal}</td><td>${monthlyTotal}</td>`;
-
-                if (loggedIn) {
-                    row += `<td><button onclick="editEntry(${index})">Edit</button> 
-                                <button onclick="deleteEntry(${index})">Delete</button></td>`;
-                }
-
-                tableBody.innerHTML += `<tr>${row}</tr>`;
-            });
-
-            drawGraphs(dailyCounts);
-        }
-
-        function drawGraphs(dailyCounts) {
-            let graphContainer = document.getElementById("graphContainer");
-            graphContainer.innerHTML = "";
-
-            let dates = Object.keys(dailyCounts);
-            let colors = ["#FF5733", "#33FF57", "#3357FF", "#FF33A1", "#33FFF9", "#FFA833", "#A133FF"];
-
-            for (let i = 0; i < dates.length; i += 5) {
-                let dateChunk = dates.slice(i, i + 5);
-                let canvas = document.createElement("canvas");
-                canvas.id = `chart${i}`;
-                graphContainer.appendChild(canvas);
-
-                let datasetColors = dateChunk.map((_, index) => colors[index % colors.length]);
-                drawGraph(canvas.id, dateChunk, dateChunk.map(d => dailyCounts[d]), "ቀርሳ Daily Registrations", datasetColors);
-            }
-        }
-
-        function drawGraph(canvasId, labels, data, title, colors) {
-            new Chart(document.getElementById(canvasId), {
-                type: "bar",
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: title,
-                        data: data,
-                        backgroundColor: colors,
-                        borderColor: "#000",
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: { y: { beginAtZero: true } },
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: { enabled: true }
-                    }
-                }
-            });
-        }
-
         generateReports();
     </script>
 
 </body>
-</html> 
+</html>
+
+
+        
