@@ -75,7 +75,8 @@
         }
 
         function loadData(key) {
-            return JSON.parse(localStorage.getItem(key)) || [];
+            let data = JSON.parse(localStorage.getItem(key)) || [];
+            return Array.isArray(data) ? data.filter(item => typeof item === "string") : [];
         }
 
         function saveData(key, data) {
@@ -88,18 +89,18 @@
             let namesList = loadData("namesData");
 
             if (!namesList.includes(name)) {
-                namesList.push(name);  // Store names as an array of strings
+                namesList.push(name);
                 saveData("namesData", namesList);
             }
 
             alert("Name Added!");
             updateDropdown();
-            generateReports();  
+            generateReports();
         });
 
         function updateDropdown() {
             let select = document.getElementById("personSelect");
-            select.innerHTML = "";
+            select.innerHTML = `<option value="" disabled selected>Select a Name</option>`;
             let namesList = loadData("namesData");
 
             namesList.forEach(name => {
@@ -190,6 +191,7 @@
         }
 
         generateReports();
+        updateDropdown();
     </script>
 
 </body>
