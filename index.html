@@ -3,242 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registration Report</title>
+    <title>National ID Registration Report</title>
+    <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        body { font-family: Arial, sans-serif; text-align: center; margin: 20px; }
-        h1, h2 { color: #333; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
-        th { background-color: #4CAF50; color: white; }
-        button { padding: 5px 10px; margin: 3px; cursor: pointer; }
-        input, select { padding: 8px; margin: 5px; }
-        .hidden { display: none; }
-        .slideshow-container { max-width: 500px; position: relative; margin: auto; }
-        .slide { display: none; width: 100%; }
-    </style>
+    <script src="scripts.js" defer></script>
 </head>
 <body>
+    <header>
+        <h1>National ID Registration Daily Report</h1>
+    </header>
 
-<h1>Registration Reports</h1>
+    <section id="public-interface">
+        <h2>Public Interface</h2>
+        <div id="image-slider">
+            <!-- Images will be loaded here dynamically -->
+        </div>
+        <div id="registration-stats">
+            <h3>Daily Registration Numbers</h3>
+            <canvas id="registrationChart"></canvas>
+        </div>
+        <form id="loginForm">
+            <input type="password" id="password" placeholder="Enter Password">
+            <button type="submit">Login</button>
+        </form>
+    </section>
 
-<!-- Password Protection -->
-<div id="passwordSection">
-    <h2>Enter Password to Manage Data</h2>
-    <input type="password" id="passwordInput" placeholder="Enter Password">
-    <button onclick="checkPassword()">Submit</button>
-</div>
+    <section id="admin-interface" style="display:none;">
+        <h2>Admin Interface</h2>
+        <form id="addPartnerForm">
+            <input type="text" id="partnerName" placeholder="Partner Name">
+            <input type="number" id="registrationNumber" placeholder="Registration Number">
+            <button type="submit">Add Partner</button>
+        </form>
+        <div id="editDeleteSection">
+            <h3>Edit/Delete Registrant</h3>
+            <!-- Options will be loaded here dynamically -->
+        </div>
+        <div id="image-management">
+            <h3>Image Management</h3>
+            <input type="file" id="imageUpload" multiple>
+            <button onclick="uploadImages()">Upload Images</button>
+            <div id="uploadedImages">
+                <!-- Uploaded images will be displayed here -->
+            </div>
+        </div>
+        <div id="reportSection">
+            <h3>Daily Report</h3>
+            <input type="date" id="reportDate">
+            <button onclick="fetchDailyReport()">Fetch Report</button>
+            <table id="reportTable">
+                <!-- Report data will be loaded here dynamically -->
+            </table>
+        </div>
+    </section>
 
-<!-- Protected Section -->
-<div id="protectedSection" class="hidden">
-    <h2>Manage Names</h2>
-    <form id="setupForm">
-        <input type="text" id="nameInput" placeholder="Enter Name" required>
-        <button type="submit">Add</button>
-    </form>
-    <ul id="namesList"></ul>
+    <footer>
+        <p>© 2025 National ID Registration System</p>
+    </footer>
 
-    <h2>Enter Daily Registrations</h2>
-    <form id="registrationForm">
-        <input type="hidden" id="editIndex">
-        <input type="date" id="dateInput" required>
-        <select id="personSelect"></select>
-        <input type="number" id="countInput" placeholder="Registrations" required>
-        <button type="submit">Submit</button>
-    </form>
+    <script>
+        const correctPassword = "id2009";
 
-    <h2>Upload Daily Images</h2>
-    <input type="file" id="imageInput" accept="image/*" multiple>
-    <button onclick="uploadImage()">Upload</button>
-    <button onclick="clearImages()">Clear Selected</button>
-</div>
-
-<!-- Slideshow -->
-<h2>Daily Images</h2>
-<div class="slideshow-container" id="imageSlideshow"></div>
-<button onclick="clearUploadedImages()">Clear Uploaded Images</button>
-
-<!-- Registration Table -->
-<h2>All Registrations</h2>
-<table>
-    <thead id="tableHeader"></thead>
-    <tbody id="tableBody"></tbody>
-</table>
-
-<h2>Daily Registration Graph</h2>
-<div id="graphContainer"></div>
-
-<script>
-    const PASSWORD = "nationalidgetachew-2009";
-    let loggedIn = false;
-
-    function checkPassword() {
-        if (document.getElementById("passwordInput").value === PASSWORD) {
-            loggedIn = true;
-            document.getElementById("passwordSection").classList.add("hidden");
-            document.getElementById("protectedSection").classList.remove("hidden");
-            updateDropdown();
-            generateReports();
-            displaySlideshow();
-            loadNames();
-        } else {
-            alert("Incorrect Password!");
-        }
-    }
-
-    function loadData(key) {
-        return JSON.parse(localStorage.getItem(key)) || [];
-    }
-
-    function saveData(key, data) {
-        localStorage.setItem(key, JSON.stringify(data));
-    }
-
-    document.getElementById("setupForm").addEventListener("submit", function(event) {
-        event.preventDefault();
-        let name = document.getElementById("nameInput").value.trim();
-        let namesList = loadData("namesData");
-
-        if (!namesList.includes(name)) {
-            namesList.push(name);
-            saveData("namesData", namesList);
-        }
-
-        alert("Name Added!");
-        updateDropdown();
-        loadNames();
-    });
-
-    function loadNames() {
-        let namesList = loadData("namesData");
-        let list = document.getElementById("namesList");
-        list.innerHTML = "";
-
-        namesList.forEach((name, index) => {
-            let li = document.createElement("li");
-            li.innerHTML = `${name} 
-                <button onclick="editName(${index})">Edit</button>
-                <button onclick="deleteName(${index})">Delete</button>`;
-            list.appendChild(li);
-        });
-
-        updateDropdown();
-    }
-
-    function editName(index) {
-        let namesList = loadData("namesData");
-        let newName = prompt("Edit Name:", namesList[index]);
-
-        if (newName) {
-            namesList[index] = newName;
-            saveData("namesData", namesList);
-            loadNames();
-            updateDropdown();
-        }
-    }
-
-    function deleteName(index) {
-        let namesList = loadData("namesData");
-        namesList.splice(index, 1);
-        saveData("namesData", namesList);
-        loadNames();
-        updateDropdown();
-    }
-
-    function updateDropdown() {
-        let select = document.getElementById("personSelect");
-        select.innerHTML = `<option value="" disabled selected>Select a Name</option>`;
-        let namesList = loadData("namesData");
-
-        namesList.forEach(name => {
-            let option = document.createElement("option");
-            option.value = name;
-            option.textContent = name;
-            select.appendChild(option);
-        });
-    }
-
-    function uploadImage() {
-        let files = document.getElementById("imageInput").files;
-        if (files.length === 0) {
-            alert("Please select one or more images.");
-            return;
-        }
-
-        let images = loadData("uploadedImages");
-        Array.from(files).forEach(file => {
-            let reader = new FileReader();
-            reader.onload = function (e) {
-                images.push(e.target.result);
-                saveData("uploadedImages", images);
-                displaySlideshow();
-            };
-            reader.readAsDataURL(file);
-        });
-
-        alert("Images Uploaded!");
-    }
-
-    function clearImages() {
-        document.getElementById("imageInput").value = "";
-    }
-
-    function clearUploadedImages() {
-        localStorage.removeItem("uploadedImages");
-        displaySlideshow();
-    }
-
-    function displaySlideshow() {
-        let images = loadData("uploadedImages");
-        let container = document.getElementById("imageSlideshow");
-        container.innerHTML = "";
-
-        images.forEach((src, index) => {
-            let img = document.createElement("img");
-            img.src = src;
-            img.className = "slide";
-            if (index === 0) img.style.display = "block";
-            container.appendChild(img);
-        });
-
-        let index = 0;
-        setInterval(() => {
-            let slides = document.querySelectorAll(".slide");
-            slides.forEach(s => (s.style.display = "none"));
-            slides[index].style.display = "block";
-            index = (index + 1) % slides.length;
-        }, 3000);
-    }
-
-    function generateReports() {
-        let data = loadData("registrationData");
-        let namesList = loadData("namesData");
-        let dailyCounts = {};
-
-        data.forEach(({ date, name, count }) => {
-            dailyCounts[date] = (dailyCounts[date] || 0) + count;
-        });
-
-        drawGraphs(dailyCounts);
-    }
-
-    function drawGraphs(dailyCounts) {
-        let graphContainer = document.getElementById("graphContainer");
-        graphContainer.innerHTML = `<canvas id="chartCanvas"></canvas>`;
-
-        new Chart(document.getElementById("chartCanvas"), {
-            type: "bar",
-            data: { 
-                labels: Object.keys(dailyCounts), 
-                datasets: [{ label: "Registrations", data: Object.values(dailyCounts), backgroundColor: ["red", "blue", "green", "yellow", "purple"] }] 
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const password = document.getElementById('password').value;
+            if (password === correctPassword) {
+                document.getElementById('public-interface').style.display = 'none';
+                document.getElementById('admin-interface').style.display = 'block';
+            } else {
+                alert('Incorrect Password');
             }
         });
-    }
 
-    generateReports();
-    displaySlideshow();
-    loadNames();
-</script>
+        function uploadImages() {
+            const files = document.getElementById('imageUpload').files;
+            // Handle image uploads here
+        }
 
+        function fetchDailyReport() {
+            const date = document.getElementById('reportDate').value;
+            // Fetch and display the report for the selected date
+        }
+
+        // Additional JavaScript for Chart.js, handling forms, etc.
+    </script>
 </body>
 </html>
