@@ -1,48 +1,240 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>National ID Registration Report</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>National ID Registration</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <header>
+
     <h1>National ID Registration Report</h1>
-    <h2></h2><a href="admin.html">admin</a></h2>
-  </header>
 
-  <!-- Image Slider -->
-  <div class="slider">
-    <img src="images/slide1.jpg" alt="Slide 1">
-    <img src="images/slide2.jpg" alt="Slide 2">
-    <img src="images/slide3.jpg" alt="Slide 3">
-  </div>
+    <!-- Admin Login Section -->
+    <div id="login-section">
+        <h2>Admin Login</h2>
+        <input type="password" id="admin-password" placeholder="Enter Admin Password">
+        <button onclick="login()">Login</button>
+    </div>
 
-  <!-- Table -->
-  <div class="table-container">
+    <!-- Admin Dashboard (Hidden until login) -->
+    <div id="admin-dashboard" style="display: none;">
+        <h2>Admin Dashboard</h2>
+        <button onclick="logout()">Logout</button>
+
+        <!-- Manage Partners -->
+        <h3>Manage Partners</h3>
+        <input type="text" id="partner-name" placeholder="Partner Name">
+        <button onclick="addPartner()">Add Partner</button>
+        <ul id="partner-list"></ul>
+
+        <!-- Manage Registrations -->
+        <h3>Manage Registrations</h3>
+        <input type="date" id="reg-date">
+        <select id="reg-partner"></select>
+        <input type="number" id="reg-count" placeholder="Registered Count">
+        <button onclick="addRegistration()">Add Registration</button>
+
+        <!-- Manage Slider Images -->
+        <h3>Manage Slider Images</h3>
+        <input type="file" id="imageUpload">
+        <button onclick="uploadImage()">Upload Image</button>
+        <div id="image-list"></div>
+    </div>
+
+    <!-- Image Slider -->
+    <h2>Image Gallery</h2>
+    <div class="slider-container">
+        <div class="slider" id="imageSlider"></div>
+    </div>
+
+    <!-- Registration Table -->
     <h2>Registration Data</h2>
     <table id="registration-table">
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Partner 1</th>
-          <th>Partner 2</th>
-          <th>Total Registered</th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- Data will be populated by JavaScript -->
-      </tbody>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Partner</th>
+                <th>Total Registered</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
     </table>
-  </div>
 
-  <!-- Graphs -->
-  <div class="graph-container">
-    <h2>Registration Graphs</h2>
-    <canvas id="registration-graph"></canvas>
-  </div>
+    <!-- Graph Section -->
+    <div class="graph-container">
+        <canvas id="registrationChart"></canvas>
+    </div>
 
-  <script src="script.js"></script>
+<script>
+const ADMIN_PASSWORD = "admin123"; // Change this to your own password
+
+// Check if user is logged in
+if (sessionStorage.getItem("loggedIn") === "true") {
+    document.getElementById("login-section").style.display = "none";
+    document.getElementById("admin-dashboard").style.display = "block";
+}
+
+// Admin Login
+function login() {
+    let password = document.getElementById("admin-password").value;
+    if (password === ADMIN_PASSWORD) {
+        sessionStorage.setItem("loggedIn", "true");
+        document.getElementById("login-section").style.display = "none";
+        document.getElementById("admin-dashboard").style.display = "block";
+    } else {
+        alert("Incorrect password! Try again.");
+    }
+}
+
+// Logout
+function logout() {
+    sessionStorage.removeItem("loggedIn");
+    location.reload();
+}
+
+// Dummy JSON Storage (For GitHub Pages)
+let partners = [{ id: 1, name: "Partner 1" }, { id: 2, name: "Partner 2" }];
+let registrations = [{ date: "2025-02-08", partner: "Partner 1", count: 50 }];
+let images = [{ url: "https://via.placeholder.com/150" }];
+
+// ================== PARTNER MANAGEMENT ================== //
+function loadPartners() {
+    let partnerList = document.getElementById("partner-list");
+    let regPartnerSelect = document.getElementById("reg-partner");
+
+    partnerList.innerHTML = "";
+    regPartnerSelect.innerHTML = "";
+
+    partners.forEach((partner, index) => {
+        let li = document.createElement("li");
+        li.innerHTML = `${partner.name} 
+            <button onclick="editPartner(${index})">Edit</button> 
+            <button onclick="deletePartner(${index})">Delete</button>`;
+        partnerList.appendChild(li);
+
+        let option = document.createElement("option");
+        option.value = partner.name;
+        option.textContent = partner.name;
+        regPartnerSelect.appendChild(option);
+    });
+}
+
+function addPartner() {
+    let name = document.getElementById("partner-name").value;
+    partners.push({ id: partners.length + 1, name });
+    loadPartners();
+}
+
+function editPartner(index) {
+    let newName = prompt("Enter new name:");
+    partners[index].name = newName;
+    loadPartners();
+}
+
+function deletePartner(index) {
+    partners.splice(index, 1);
+    loadPartners();
+}
+
+// ================== REGISTRATION MANAGEMENT ================== //
+function loadRegistrations() {
+    let tableBody = document.querySelector("#registration-table tbody");
+
+    let labels = [];
+    let values = [];
+
+    tableBody.innerHTML = "";
+
+    registrations.forEach(reg => {
+        let row = `<tr><td>${reg.date}</td><td>${reg.partner}</td><td>${reg.count}</td></tr>`;
+        tableBody.innerHTML += row;
+
+        labels.push(reg.date);
+        values.push(reg.count);
+    });
+
+    drawGraph(labels, values);
+}
+
+function addRegistration() {
+    let date = document.getElementById("reg-date").value;
+    let partner = document.getElementById("reg-partner").value;
+    let count = document.getElementById("reg-count").value;
+
+    registrations.push({ date, partner, count });
+    loadRegistrations();
+}
+
+// ================== IMAGE MANAGEMENT ================== //
+function loadImages() {
+    let imageSlider = document.getElementById("imageSlider");
+    let imageList = document.getElementById("image-list");
+
+    imageSlider.innerHTML = "";
+    imageList.innerHTML = "";
+
+    images.forEach((img, index) => {
+        let imgElement = document.createElement("img");
+        imgElement.src = img.url;
+        imgElement.width = 100;
+
+        let deleteBtn = document.createElement("button");
+        deleteBtn.textContent = "Delete";
+        deleteBtn.onclick = () => deleteImage(index);
+
+        let div = document.createElement("div");
+        div.appendChild(imgElement);
+        div.appendChild(deleteBtn);
+
+        imageList.appendChild(div);
+
+        let sliderImg = document.createElement("img");
+        sliderImg.src = img.url;
+        imageSlider.appendChild(sliderImg);
+    });
+}
+
+function uploadImage() {
+    let fileInput = document.getElementById("imageUpload");
+    let file = fileInput.files[0];
+
+    let reader = new FileReader();
+    reader.onloadend = function () {
+        images.push({ url: reader.result });
+        loadImages();
+    };
+    reader.readAsDataURL(file);
+}
+
+function deleteImage(index) {
+    images.splice(index, 1);
+    loadImages();
+}
+
+// ================== DRAW GRAPH ================== //
+function drawGraph(labels, values) {
+    new Chart(document.getElementById("registrationChart"), {
+        type: "bar",
+        data: {
+            labels: labels,
+            datasets: [{
+                label: "Registrations",
+                data: values,
+                backgroundColor: "blue"
+            }]
+        }
+    });
+}
+
+// Load Everything on Page Load
+window.onload = function() {
+    loadPartners();
+    loadRegistrations();
+    loadImages();
+};
+</script>
+
 </body>
 </html>
