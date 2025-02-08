@@ -5,25 +5,6 @@ body {
     margin: 0;
 }
 
-/* Slider Styles */
-.slider {
-    width: 100%;
-    height: 300px;
-    overflow: hidden;
-    position: relative;
-}
-
-.slides img {
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    opacity: 0;
-    transition: opacity 1s ease-in-out;
-}
-
-.slides .active {
-    opacity: 1;
-}
 
 /* Table Styles */
 .table-container {
@@ -49,8 +30,57 @@ th {
 }
 
 /* Pagination */
+
+
+/* Footer */
+footer {
+    background: #222;
+    color: white;
+    padding: 10px;
+    position: fixed;
+    width: 100%;
+    bottom: 0;
+}
+
+
+/* Center the slider */
+.slider {
+    width: 50%;
+    height: 300px;
+    margin: 20px auto;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.slides img {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    opacity: 0;
+    transition: opacity 1s ease-in-out;
+}
+
+.slides .active {
+    opacity: 1;
+}
+
+/* Graph Container for Better UI */
+.chart-container {
+    margin: 20px auto;
+    width: 80%;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Pagination Buttons */
 .pagination {
-    margin: 10px;
+    margin-top: 10px;
+    text-align: center;
 }
 
 button {
@@ -67,20 +97,8 @@ button:hover {
     background: #0056b3;
 }
 
-/* Footer */
-footer {
-    background: #222;
-    color: white;
-    padding: 10px;
-    position: fixed;
-    width: 100%;
-    bottom: 0;
+button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
 }
-.chart-container {
-    margin: 20px auto;
-    width: 90%;
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-}
+    
