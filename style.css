@@ -1,17 +1,53 @@
 body {
-    font-family: Arial, sans-serif;
-    text-align: center;
+  font-family: Arial, sans-serif;
+  margin: 20px;
 }
+
+.hidden {
+  display: none;
+}
+
+#dashboard {
+  margin-top: 20px;
+}
+
+form {
+  margin-bottom: 20px;
+}
+
+input, select, button {
+  margin: 5px;
+  padding: 10px;
+}
+
 table {
-    width: 90%;
-    margin: 20px auto;
-    border-collapse: collapse;
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
 }
+
 th, td {
-    border: 1px solid #ddd;
-    padding: 10px;
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
 }
-.slider {
-    width: 90%;
-    margin: 20px auto;
+
+th {
+  background-color: #f4f4f4;
+}
+
+#slider-images img {
+  max-width: 100%;
+  height: auto;
+  margin: 10px 0;
+}
+
+#graphs-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+canvas {
+  max-width: 400px;
 }
