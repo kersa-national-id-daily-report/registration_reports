@@ -22,5 +22,5 @@ function login() {
 
 // 📊 Fetch Registrations
 function fetchRegistrations() {
-    fetch("https://your-server.com/api.php?fetch_registrations=true")
+    fetch("https://nid.ksug.com/api.php?fetch_registrations=true")
     .then
