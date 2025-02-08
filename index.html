@@ -1,32 +1,68 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>National ID Registration Report</title>
-    <link rel="stylesheet" href="styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="script.js" defer></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>National ID Registration Report</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <h1>National ID Registration Report</h1>
+  <div id="login-section">
+    <h2>Admin Login</h2>
+    <form id="login-form">
+      <input type="password" id="admin-password" placeholder="Enter Admin Password" required>
+      <button type="submit">Login</button>
+    </form>
+  </div>
 
-    <!-- 🔐 Admin Login Form -->
-    <div id="loginSection">
-        <input type="text" id="username" placeholder="Username">
-        <input type="password" id="password" placeholder="Password">
-        <button onclick="login()">Login</button>
+  <div id="dashboard" class="hidden">
+    <h2>Dashboard</h2>
+    <button id="logout-btn">Logout</button>
+
+    <!-- Add Partner Form -->
+    <form id="add-partner-form">
+      <h3>Add Partner</h3>
+      <input type="text" id="partner-name" placeholder="Partner Name" required>
+      <button type="submit">Add Partner</button>
+    </form>
+
+    <!-- Add Registration Data -->
+    <form id="add-registration-form">
+      <h3>Add Registration Data</h3>
+      <input type="date" id="registration-date" required>
+      <select id="partner-select" required></select>
+      <input type="number" id="registration-count" placeholder="Number of Registrations" required>
+      <button type="submit">Add Data</button>
+    </form>
+
+    <!-- Image Slider -->
+    <div id="image-slider">
+      <h3>Image Slider</h3>
+      <input type="file" id="image-upload" accept="image/*">
+      <button id="delete-image-btn">Delete Image</button>
+      <div id="slider-images"></div>
     </div>
 
-    <!-- 📊 Table for Registrations -->
-    <table id="registrationTable"></table>
+    <!-- Table -->
+    <h3>Registration Data Table</h3>
+    <table id="registration-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <!-- Partner columns will be dynamically added here -->
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Rows will be dynamically added here -->
+      </tbody>
+    </table>
 
-    <!-- 📈 Graph -->
-    <canvas id="registrationChart"></canvas>
+    <!-- Graphs -->
+    <h3>Registration Graphs</h3>
+    <div id="graphs-container"></div>
+  </div>
 
-    <!-- 📸 Image Slider -->
-    <div class="slider">
-        <img id="slideImg" src="default.jpg" alt="Slider">
-    </div>
+  <script src="script.js"></script>
 </body>
 </html>
