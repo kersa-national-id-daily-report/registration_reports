@@ -1,60 +1,38 @@
 body {
-  font-family: Arial, sans-serif;
-  margin: 0;
-  padding: 0;
-  background-color: #f4f4f4;
+    font-family: Arial, sans-serif;
+    text-align: center;
 }
 
-header {
-  background: #007b ff;
-  color: white;
-  padding: 10px 0;
-  text-align: center;
-}
-
-.slider {
-  display: flex;
-  overflow: hidden;
-  width: 100%;
-  height: 300px;
+.slider-container {
+    width: 100%;
+    height: 300px;
+    overflow: hidden;
+    position: relative;
 }
 
 .slider img {
-  width: 100%;
-  height: auto;
+    width: 100%;
+    display: none;
 }
 
-.table-container, .graph-container, .form-container {
-  margin: 20px;
-  padding: 20px;
-  background: white;
-  border-radius: 5px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+.graph-container {
+    width: 80%;
+    margin: auto;
 }
 
 table {
-  width: 100%;
-  border-collapse: collapse;
+    width: 80%;
+    margin: 20px auto;
+    border-collapse: collapse;
 }
 
 th, td {
-  padding: 10px;
-  text-align: center;
-  border: 1px solid #ddd;
+    padding: 10px;
+    border: 1px solid black;
+    text-align: center;
 }
 
-h2 {
-  color: #333;
-}
-
-button {
-  background-color: #007bff;
-  color: white;
-  border: none;
-  padding: 10px 15px;
-  cursor: pointer;
-}
-
-button:hover {
-  background-color: #0056b3;
+th {
+    background-color: #4CAF50;
+    color: white;
 }
