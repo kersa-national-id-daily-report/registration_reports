@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Admin Dashboard</h1>
+  </header>
+
+  <!-- Add Partner Form -->
+  <div class="form-container">
+    <h2>Add Partner</h2>
+    <form id="add-partner-form">
+      <label for="partner-name">Partner Name:</label>
+      <input type="text" id="partner-name" required>
+      <button type="submit">Add Partner</button>
+    </form>
+  </div>
+
+  <!-- Edit/Delete Partner -->
+  <div class="form-container">
+    <h2>Edit/Delete Partner</h2>
+    <form id="edit-partner-form">
+      <label for="partner-select">Select Partner:</label>
+      <select id="partner-select" required></select>
+      <label for="new-partner-name">New Name:</label>
+      <input type="text" id="new-partner-name" required>
+      <button type="submit">Edit Partner</button>
+      <button type="button" id="delete-partner">Delete Partner</button>
+    </form>
+  </div>
+
+  <!-- Add/Edit/Delete Registration Data -->
+  <div class="form-container">
+    <h2>Manage Registration Data</h2>
+    <form id="registration-form">
+      <label for="date">Date:</label>
+      <input type="date" id="date" required>
+      <label for="partner-select-reg">Select Partner:</label>
+      <select id="partner-select-reg" required></select>
+      <label for="registered-count">Number Registered:</label>
+      <input type="number" id="registered-count" required>
+      <button type="submit">Add Registration</button>
+      <button type="button" id="edit-registration">Edit Registration</button>
+      <button type="button" id="delete-registration">Delete Registration</button>
+    </form>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
