@@ -8,7 +8,7 @@ function login() {
     let username = document.getElementById("username").value;
     let password = document.getElementById("password").value;
     
-    fetch("https://your-server.com/api.php", {
+    fetch("https://nid.ksug.com/hdocs/api.php", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: `login=true&username=${username}&password=${password}`
@@ -22,5 +22,5 @@ function login() {
 
 // 📊 Fetch Registrations
 function fetchRegistrations() {
-    fetch("https://nid.ksug.com/api.php?fetch_registrations=true")
+    fetch("https://nid.ksug.com/hdocs/api.php?fetch_registrations=true")
     .then
