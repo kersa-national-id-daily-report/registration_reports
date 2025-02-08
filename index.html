@@ -4,88 +4,173 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>National ID Registration Report</title>
-    <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="scripts.js" defer></script>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        header { background-color: #007BFF; color: white; padding: 15px; }
+        .slider img { width: 80%; height: auto; margin: 20px auto; display: block; }
+        .stats { font-size: 20px; margin: 20px; }
+        canvas { max-width: 600px; margin: auto; display: block; }
+        table, th, td { border: 1px solid black; border-collapse: collapse; padding: 10px; margin: auto; }
+        button { background-color: #007BFF; color: white; border: none; padding: 10px; margin: 5px; cursor: pointer; }
+        #adminPanel { display: none; }
+    </style>
 </head>
 <body>
-    <header>
-        <h1>National ID Registration Daily Report</h1>
-    </header>
 
-    <section id="public-interface">
-        <h2>Public Interface</h2>
-        <div id="image-slider">
-            <!-- Images will be loaded here dynamically -->
-        </div>
-        <div id="registration-stats">
-            <h3>Daily Registration Numbers</h3>
-            <canvas id="registrationChart"></canvas>
-        </div>
-        <form id="loginForm">
-            <input type="password" id="password" placeholder="Enter Password">
-            <button type="submit">Login</button>
-        </form>
-    </section>
+<header>
+    <h1>National ID Registration Report</h1>
+</header>
 
-    <section id="admin-interface" style="display:none;">
-        <h2>Admin Interface</h2>
-        <form id="addPartnerForm">
-            <input type="text" id="partnerName" placeholder="Partner Name">
-            <input type="number" id="registrationNumber" placeholder="Registration Number">
-            <button type="submit">Add Partner</button>
-        </form>
-        <div id="editDeleteSection">
-            <h3>Edit/Delete Registrant</h3>
-            <!-- Options will be loaded here dynamically -->
-        </div>
-        <div id="image-management">
-            <h3>Image Management</h3>
-            <input type="file" id="imageUpload" multiple>
-            <button onclick="uploadImages()">Upload Images</button>
-            <div id="uploadedImages">
-                <!-- Uploaded images will be displayed here -->
-            </div>
-        </div>
-        <div id="reportSection">
-            <h3>Daily Report</h3>
-            <input type="date" id="reportDate">
-            <button onclick="fetchDailyReport()">Fetch Report</button>
-            <table id="reportTable">
-                <!-- Report data will be loaded here dynamically -->
-            </table>
-        </div>
-    </section>
+<!-- Image Slider -->
+<div class="slider">
+    <img id="sliderImage" src="" alt="Registration Slide">
+</div>
 
-    <footer>
-        <p>© 2025 National ID Registration System</p>
-    </footer>
+<!-- Daily Registration Numbers -->
+<div class="stats">
+    <h2>Daily Registrations</h2>
+    <p id="totalRegistrations">Total Today: 0</p>
+</div>
 
-    <script>
-        const correctPassword = "id2009";
+<!-- Graph -->
+<canvas id="registrationChart"></canvas>
 
-        document.getElementById('loginForm').addEventListener('submit', function(event) {
-            event.preventDefault();
-            const password = document.getElementById('password').value;
-            if (password === correctPassword) {
-                document.getElementById('public-interface').style.display = 'none';
-                document.getElementById('admin-interface').style.display = 'block';
-            } else {
-                alert('Incorrect Password');
+<!-- Login Form -->
+<div id="loginContainer">
+    <h2>Admin Login</h2>
+    <input type="password" id="passwordInput" placeholder="Enter Password">
+    <button onclick="checkLogin()">Login</button>
+</div>
+
+<!-- Admin Panel -->
+<div id="adminPanel">
+    <h2>Admin Dashboard</h2>
+
+    <h3>Add Registration Partner</h3>
+    <input type="text" id="partnerName" placeholder="Partner Name">
+    <button onclick="addPartner()">Add</button>
+
+    <h3>Update Registrations</h3>
+    <input type="text" id="selectPartner" placeholder="Partner Name">
+    <input type="number" id="regNumber" placeholder="Registrations">
+    <button onclick="updateRegistrations()">Update</button>
+
+    <h3>Upload Image</h3>
+    <input type="file" id="imageUpload">
+    <button onclick="uploadImage()">Upload</button>
+
+    <h3>Daily Registration Table</h3>
+    <table id="dataTable">
+        <tr>
+            <th>Date</th>
+            <th>Partner</th>
+            <th>Registrations</th>
+        </tr>
+    </table>
+
+    <button onclick="logout()">Logout</button>
+</div>
+
+<script>
+    let registrations = { "2025-02-08": { "Partner A": 50, "Partner B": 30 } };
+    let images = localStorage.getItem("sliderImages") ? JSON.parse(localStorage.getItem("sliderImages")) : ["https://via.placeholder.com/800x400"];
+    let currentImageIndex = 0;
+
+    // Image Slider
+    function updateSlider() {
+        if (images.length > 0) {
+            document.getElementById("sliderImage").src = images[currentImageIndex];
+            currentImageIndex = (currentImageIndex + 1) % images.length;
+        }
+    }
+    setInterval(updateSlider, 3000);
+    updateSlider();
+
+    // Graph Rendering
+    function renderChart() {
+        let labels = Object.keys(registrations["2025-02-08"]);
+        let data = Object.values(registrations["2025-02-08"]);
+
+        new Chart(document.getElementById("registrationChart"), {
+            type: "bar",
+            data: {
+                labels: labels,
+                datasets: [{ label: "Registrations", data: data, backgroundColor: ["red", "blue", "green"] }]
             }
         });
+    }
 
-        function uploadImages() {
-            const files = document.getElementById('imageUpload').files;
-            // Handle image uploads here
+    // Admin Login
+    function checkLogin() {
+        let password = document.getElementById("passwordInput").value;
+        if (password === "id2009") {
+            document.getElementById("loginContainer").style.display = "none";
+            document.getElementById("adminPanel").style.display = "block";
+        } else {
+            alert("Incorrect Password!");
         }
+    }
 
-        function fetchDailyReport() {
-            const date = document.getElementById('reportDate').value;
-            // Fetch and display the report for the selected date
+    // Add Partner
+    function addPartner() {
+        let partner = document.getElementById("partnerName").value;
+        if (partner) {
+            registrations["2025-02-08"][partner] = 0;
+            renderTable();
+            alert("Partner Added!");
         }
+    }
 
-        // Additional JavaScript for Chart.js, handling forms, etc.
-    </script>
+    // Update Registrations
+    function updateRegistrations() {
+        let partner = document.getElementById("selectPartner").value;
+        let number = parseInt(document.getElementById("regNumber").value);
+        if (registrations["2025-02-08"][partner] !== undefined) {
+            registrations["2025-02-08"][partner] = number;
+            renderTable();
+            renderChart();
+            alert("Updated Successfully!");
+        } else {
+            alert("Partner Not Found!");
+        }
+    }
+
+    // Render Table
+    function renderTable() {
+        let table = document.getElementById("dataTable");
+        table.innerHTML = "<tr><th>Date</th><th>Partner</th><th>Registrations</th></tr>";
+
+        for (let partner in registrations["2025-02-08"]) {
+            let row = `<tr><td>2025-02-08</td><td>${partner}</td><td>${registrations["2025-02-08"][partner]}</td></tr>`;
+            table.innerHTML += row;
+        }
+    }
+
+    // Upload Image
+    function uploadImage() {
+        let file = document.getElementById("imageUpload").files[0];
+        if (file) {
+            let reader = new FileReader();
+            reader.onload = function (e) {
+                images.push(e.target.result);
+                localStorage.setItem("sliderImages", JSON.stringify(images));
+                alert("Image Uploaded!");
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    // Logout
+    function logout() {
+        document.getElementById("loginContainer").style.display = "block";
+        document.getElementById("adminPanel").style.display = "none";
+    }
+
+    document.getElementById("totalRegistrations").innerText = `Total Today: ${Object.values(registrations["2025-02-08"]).reduce((a, b) => a + b, 0)}`;
+    renderTable();
+    renderChart();
+</script>
+
 </body>
 </html>
