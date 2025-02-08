@@ -4,63 +4,42 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>National ID Registration Report</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div id="login-section">
-    <h2>Admin Login</h2>
-    <form id="login-form">
-      <input type="password" id="admin-password" placeholder="Enter Admin Password" required>
-      <button type="submit">Login</button>
-    </form>
+  <header>
+    <h1>National ID Registration Report</h1>
+  </header>
+
+  <!-- Image Slider -->
+  <div class="slider">
+    <img src="images/slide1.jpg" alt="Slide 1">
+    <img src="images/slide2.jpg" alt="Slide 2">
+    <img src="images/slide3.jpg" alt="Slide 3">
   </div>
 
-  <div id="dashboard" class="hidden">
-    <h2>Dashboard</h2>
-    <button id="logout-btn">Logout</button>
-
-    <!-- Add Partner Form -->
-    <form id="add-partner-form">
-      <h3>Add Partner</h3>
-      <input type="text" id="partner-name" placeholder="Partner Name" required>
-      <button type="submit">Add Partner</button>
-    </form>
-
-    <!-- Add Registration Data -->
-    <form id="add-registration-form">
-      <h3>Add Registration Data</h3>
-      <input type="date" id="registration-date" required>
-      <select id="partner-select" required></select>
-      <input type="number" id="registration-count" placeholder="Number of Registrations" required>
-      <button type="submit">Add Data</button>
-    </form>
-
-    <!-- Image Slider -->
-    <div id="image-slider">
-      <h3>Image Slider</h3>
-      <input type="file" id="image-upload" accept="image/*">
-      <button id="delete-image-btn">Delete Image</button>
-      <div id="slider-images"></div>
-    </div>
-
-    <!-- Table -->
-    <h3>Registration Data Table</h3>
+  <!-- Table -->
+  <div class="table-container">
+    <h2>Registration Data</h2>
     <table id="registration-table">
       <thead>
         <tr>
           <th>Date</th>
-          <!-- Partner columns will be dynamically added here -->
+          <th>Partner 1</th>
+          <th>Partner 2</th>
+          <th>Total Registered</th>
         </tr>
       </thead>
       <tbody>
-        <!-- Rows will be dynamically added here -->
+        <!-- Data will be populated by JavaScript -->
       </tbody>
     </table>
+  </div>
 
-    <!-- Graphs -->
-    <h3>Registration Graphs</h3>
-    <div id="graphs-container"></div>
+  <!-- Graphs -->
+  <div class="graph-container">
+    <h2>Registration Graphs</h2>
+    <canvas id="registration-graph"></canvas>
   </div>
 
   <script src="script.js"></script>
