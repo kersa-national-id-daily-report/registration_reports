@@ -1,215 +1,64 @@
-Only the pushed name is display in table colomn vut not object object display in dropdown
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ቀርሳ Station - National ID Registration Report</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="js/script.js" defer></script>
+</head>
+<body>
 
-<!DOCTYPE html>  <html lang="en">  
-<head>  
-    <meta charset="UTF-8">  
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
-    <title>Registration Report</title>  <!-- Chart.js for Graphs -->  
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>  
+    <!-- Smart Sliding Image Section -->
+    <div class="slider">
+        <div class="slides">
+            <img src="images/slide1.jpg" class="slide active">
+            <img src="images/slide2.jpg" class="slide">
+            <img src="images/slide3.jpg" class="slide">
+        </div>
+    </div>
 
-<!-- Styling -->  
-<style>  
-    body { font-family: Arial, sans-serif; text-align: center; margin: 20px; }  
-    h1, h2 { color: #333; }  
-    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }  
-    th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }  
-    th { background-color: #4CAF50; color: white; }  
-    button { padding: 5px 10px; margin: 3px; cursor: pointer; }  
-    canvas { max-width: 100%; display: block; margin: auto; }  
-    input, select { padding: 8px; margin: 5px; }  
-    .hidden { display: none; }  
-    .slideshow-container { max-width: 500px; position: relative; margin: auto; }  
-    .slide { display: none; width: 100%; }  
-</style>
+    <!-- Registration Report Table -->
+    <div class="table-container">
+        <h2>ቀርሳ Station - National ID Registration Report</h2>
+        <table id="registrationTable">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Getachew (Supervisor)</th>
+                    <th>Emebet (Officer)</th>
+                    <th>Ermiyas (Officer)</th>
+                    <th>Mustefa (Officer)</th>
+                    <th>Abenazer (Officer)</th>
+                    <th>Amar (Officer)</th>
+                    <th>Firomsa (Ass.)</th>
+                    <th>Roman (Ass.)</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <div class="pagination">
+            <button id="prevTable">« Prev</button>
+            <button id="nextTable">Next »</button>
+        </div>
+    </div>
 
-</head>  
-<body>  <h1>Registration Reports</h1>  
+    <!-- Graph Section -->
+    <div class="chart-container">
+        <h2>Daily Registration Overview</h2>
+        <canvas id="registrationChart"></canvas>
+        <div class="pagination">
+            <button id="prevChart">« Prev</button>
+            <button id="nextChart">Next »</button>
+        </div>
+    </div>
 
-<!-- Password Protection -->  
-<div id="passwordSection">  
-    <h2>Enter Password to Manage Data</h2>  
-    <input type="password" id="passwordInput" placeholder="Enter Password">  
-    <button onclick="checkPassword()">Submit</button>  
-</div>  
+    <!-- Footer -->
+    <footer>
+        <p>Developed by Getachew Dires</p>
+    </footer>
 
-<div id="protectedSection" class="hidden">  
-    <h2>Manage Names</h2>  
-    <form id="setupForm">  
-        <input type="text" id="nameInput" placeholder="Enter Name" required>  
-        <button type="submit">Add</button>  
-    </form>  
-
-    <h2>Enter Daily Registrations</h2>  
-    <form id="registrationForm">  
-        <input type="hidden" id="editIndex">  
-        <input type="date" id="dateInput" required>  
-        <select id="personSelect"></select>  
-        <input type="number" id="countInput" placeholder="Registrations" required>  
-        <button type="submit">Submit</button>  
-    </form>  
-</div>  
-
-<h2>All Registrations</h2>  
-<table>  
-    <thead id="tableHeader"></thead>  
-    <tbody id="tableBody"></tbody>  
-</table>  
-
-<h2>Daily Registration Graph</h2>  
-<div id="graphContainer"></div>  
-
-<script>  
-    const PASSWORD = "nationalidgetachew-2009";  
-    let loggedIn = false;  
-
-    function checkPassword() {  
-        if (document.getElementById("passwordInput").value === PASSWORD) {  
-            loggedIn = true;  
-            document.getElementById("passwordSection").classList.add("hidden");  
-            document.getElementById("protectedSection").classList.remove("hidden");  
-            updateDropdown();  
-            generateReports();  
-        } else {  
-            alert("Incorrect Password!");  
-        }  
-    }  
-
-    function loadData(key) {  
-        return JSON.parse(localStorage.getItem(key)) || [];  
-    }  
-
-    function saveData(key, data) {  
-        localStorage.setItem(key, JSON.stringify(data));  
-    }  
-
-    document.getElementById("setupForm").addEventListener("submit", function(event) {  
-        event.preventDefault();  
-        let name = document.getElementById("nameInput").value.trim();  
-        let namesList = loadData("namesData");  
-
-        namesList.push(name);  
-        saveData("namesData", namesList);  
-
-        alert("Name Added!");  
-        updateDropdown();  
-    });  
-
-    function updateDropdown() {  
-        let select = document.getElementById("personSelect");  
-        select.innerHTML = "";  
-        let namesList = loadData("namesData");  
-
-        namesList.forEach(name => {  
-            let option = document.createElement("option");  
-            option.value = name;  
-            option.textContent = name;  
-            select.appendChild(option);  
-        });  
-    }  
-
-    document.getElementById("registrationForm").addEventListener("submit", function(event) {  
-        event.preventDefault();  
-        let date = document.getElementById("dateInput").value;  
-        let name = document.getElementById("personSelect").value;  
-        let count = parseInt(document.getElementById("countInput").value);  
-        let editIndex = document.getElementById("editIndex").value;  
-        let data = loadData("registrationData");  
-
-        if (editIndex) {  
-            data[editIndex] = { date, name, count };  
-        } else {  
-            data.push({ date, name, count });  
-        }  
-
-        saveData("registrationData", data);  
-        alert("Data Saved!");  
-        document.getElementById("editIndex").value = "";  
-        event.target.reset();  
-        generateReports();  
-    });  
-
-    function editEntry(index) {  
-        if (!loggedIn) return;  
-        let data = loadData("registrationData");  
-        let entry = data[index];  
-
-        document.getElementById("dateInput").value = entry.date;  
-        document.getElementById("personSelect").value = entry.name;  
-        document.getElementById("countInput").value = entry.count;  
-        document.getElementById("editIndex").value = index;  
-    }  
-
-    function deleteEntry(index) {  
-        if (!loggedIn) return;  
-        let data = loadData("registrationData");  
-        data.splice(index, 1);  
-        saveData("registrationData", data);  
-        generateReports();  
-    }  
-
-    function generateReports() {  
-        let data = loadData("registrationData");  
-        let namesList = loadData("namesData");  
-        let groupedData = {};  
-        let dailyCounts = {};  
-
-        data.forEach(({ date, name, count }) => {  
-            if (!groupedData[date]) groupedData[date] = {};  
-            groupedData[date][name] = count;  
-            dailyCounts[date] = (dailyCounts[date] || 0) + count;  
-        });  
-
-        let tableHeader = document.getElementById("tableHeader");  
-        let tableBody = document.getElementById("tableBody");  
-        tableHeader.innerHTML = `<tr><th>Date</th>${namesList.map(name => `<th>${name}</th>`).join("")}<th>Total</th>${loggedIn ? "<th>Actions</th>" : ""}</tr>`;  
-        tableBody.innerHTML = "";  
-
-        Object.keys(groupedData).forEach((date, index) => {  
-            let row = `<td>${date}</td>`;  
-            let total = 0;  
-            namesList.forEach(name => {  
-                let count = groupedData[date][name] || 0;  
-                row += `<td>${count}</td>`;  
-                total += count;  
-            });  
-            row += `<td>${total}</td>`;  
-            if (loggedIn) {  
-                row += `<td><button onclick="editEntry(${index})">Edit</button>  
-                            <button onclick="deleteEntry(${index})">Delete</button></td>`;  
-            }  
-            tableBody.innerHTML += `<tr>${row}</tr>`;  
-        });  
-
-        drawGraphs(dailyCounts);  
-    }  
-
-    function drawGraphs(dailyCounts) {  
-        let graphContainer = document.getElementById("graphContainer");  
-        graphContainer.innerHTML = "";  
-
-        let dates = Object.keys(dailyCounts);  
-        let canvas = document.createElement("canvas");  
-        graphContainer.appendChild(canvas);  
-
-        new Chart(canvas, {  
-            type: "bar",  
-            data: {  
-                labels: dates,    
-                datasets: [{  
-                    label: "Daily Registrations",  
-                    data: dates.map(d => dailyCounts[d]),  
-                    backgroundColor: ["red", "blue", "green", "yellow", "orange"]  
-                }]  
-            },  
-            options: {  
-                responsive: true,  
-                scales: { y: { beginAtZero: true } }  
-            }  
-        });  
-    }  
-
-    generateReports();  
-</script>
-
-</body>  
+</body>
 </html>
