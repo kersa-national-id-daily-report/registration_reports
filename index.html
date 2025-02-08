@@ -1,240 +1,215 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>National ID Registration</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
+Only the pushed name is display in table colomn vut not object object display in dropdown
 
-    <h1>National ID Registration Report</h1>
+<!DOCTYPE html>  <html lang="en">  
+<head>  
+    <meta charset="UTF-8">  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+    <title>Registration Report</title>  <!-- Chart.js for Graphs -->  
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>  
 
-    <!-- Admin Login Section -->
-    <div id="login-section">
-        <h2>Admin Login</h2>
-        <input type="password" id="admin-password" placeholder="Enter Admin Password">
-        <button onclick="login()">Login</button>
-    </div>
+<!-- Styling -->  
+<style>  
+    body { font-family: Arial, sans-serif; text-align: center; margin: 20px; }  
+    h1, h2 { color: #333; }  
+    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }  
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }  
+    th { background-color: #4CAF50; color: white; }  
+    button { padding: 5px 10px; margin: 3px; cursor: pointer; }  
+    canvas { max-width: 100%; display: block; margin: auto; }  
+    input, select { padding: 8px; margin: 5px; }  
+    .hidden { display: none; }  
+    .slideshow-container { max-width: 500px; position: relative; margin: auto; }  
+    .slide { display: none; width: 100%; }  
+</style>
 
-    <!-- Admin Dashboard (Hidden until login) -->
-    <div id="admin-dashboard" style="display: none;">
-        <h2>Admin Dashboard</h2>
-        <button onclick="logout()">Logout</button>
+</head>  
+<body>  <h1>Registration Reports</h1>  
 
-        <!-- Manage Partners -->
-        <h3>Manage Partners</h3>
-        <input type="text" id="partner-name" placeholder="Partner Name">
-        <button onclick="addPartner()">Add Partner</button>
-        <ul id="partner-list"></ul>
+<!-- Password Protection -->  
+<div id="passwordSection">  
+    <h2>Enter Password to Manage Data</h2>  
+    <input type="password" id="passwordInput" placeholder="Enter Password">  
+    <button onclick="checkPassword()">Submit</button>  
+</div>  
 
-        <!-- Manage Registrations -->
-        <h3>Manage Registrations</h3>
-        <input type="date" id="reg-date">
-        <select id="reg-partner"></select>
-        <input type="number" id="reg-count" placeholder="Registered Count">
-        <button onclick="addRegistration()">Add Registration</button>
+<div id="protectedSection" class="hidden">  
+    <h2>Manage Names</h2>  
+    <form id="setupForm">  
+        <input type="text" id="nameInput" placeholder="Enter Name" required>  
+        <button type="submit">Add</button>  
+    </form>  
 
-        <!-- Manage Slider Images -->
-        <h3>Manage Slider Images</h3>
-        <input type="file" id="imageUpload">
-        <button onclick="uploadImage()">Upload Image</button>
-        <div id="image-list"></div>
-    </div>
+    <h2>Enter Daily Registrations</h2>  
+    <form id="registrationForm">  
+        <input type="hidden" id="editIndex">  
+        <input type="date" id="dateInput" required>  
+        <select id="personSelect"></select>  
+        <input type="number" id="countInput" placeholder="Registrations" required>  
+        <button type="submit">Submit</button>  
+    </form>  
+</div>  
 
-    <!-- Image Slider -->
-    <h2>Image Gallery</h2>
-    <div class="slider-container">
-        <div class="slider" id="imageSlider"></div>
-    </div>
+<h2>All Registrations</h2>  
+<table>  
+    <thead id="tableHeader"></thead>  
+    <tbody id="tableBody"></tbody>  
+</table>  
 
-    <!-- Registration Table -->
-    <h2>Registration Data</h2>
-    <table id="registration-table">
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th>Partner</th>
-                <th>Total Registered</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
+<h2>Daily Registration Graph</h2>  
+<div id="graphContainer"></div>  
 
-    <!-- Graph Section -->
-    <div class="graph-container">
-        <canvas id="registrationChart"></canvas>
-    </div>
+<script>  
+    const PASSWORD = "nationalidgetachew-2009";  
+    let loggedIn = false;  
 
-<script>
-const ADMIN_PASSWORD = "admin123"; // Change this to your own password
+    function checkPassword() {  
+        if (document.getElementById("passwordInput").value === PASSWORD) {  
+            loggedIn = true;  
+            document.getElementById("passwordSection").classList.add("hidden");  
+            document.getElementById("protectedSection").classList.remove("hidden");  
+            updateDropdown();  
+            generateReports();  
+        } else {  
+            alert("Incorrect Password!");  
+        }  
+    }  
 
-// Check if user is logged in
-if (sessionStorage.getItem("loggedIn") === "true") {
-    document.getElementById("login-section").style.display = "none";
-    document.getElementById("admin-dashboard").style.display = "block";
-}
+    function loadData(key) {  
+        return JSON.parse(localStorage.getItem(key)) || [];  
+    }  
 
-// Admin Login
-function login() {
-    let password = document.getElementById("admin-password").value;
-    if (password === ADMIN_PASSWORD) {
-        sessionStorage.setItem("loggedIn", "true");
-        document.getElementById("login-section").style.display = "none";
-        document.getElementById("admin-dashboard").style.display = "block";
-    } else {
-        alert("Incorrect password! Try again.");
-    }
-}
+    function saveData(key, data) {  
+        localStorage.setItem(key, JSON.stringify(data));  
+    }  
 
-// Logout
-function logout() {
-    sessionStorage.removeItem("loggedIn");
-    location.reload();
-}
+    document.getElementById("setupForm").addEventListener("submit", function(event) {  
+        event.preventDefault();  
+        let name = document.getElementById("nameInput").value.trim();  
+        let namesList = loadData("namesData");  
 
-// Dummy JSON Storage (For GitHub Pages)
-let partners = [{ id: 1, name: "Partner 1" }, { id: 2, name: "Partner 2" }];
-let registrations = [{ date: "2025-02-08", partner: "Partner 1", count: 50 }];
-let images = [{ url: "https://via.placeholder.com/150" }];
+        namesList.push(name);  
+        saveData("namesData", namesList);  
 
-// ================== PARTNER MANAGEMENT ================== //
-function loadPartners() {
-    let partnerList = document.getElementById("partner-list");
-    let regPartnerSelect = document.getElementById("reg-partner");
+        alert("Name Added!");  
+        updateDropdown();  
+    });  
 
-    partnerList.innerHTML = "";
-    regPartnerSelect.innerHTML = "";
+    function updateDropdown() {  
+        let select = document.getElementById("personSelect");  
+        select.innerHTML = "";  
+        let namesList = loadData("namesData");  
 
-    partners.forEach((partner, index) => {
-        let li = document.createElement("li");
-        li.innerHTML = `${partner.name} 
-            <button onclick="editPartner(${index})">Edit</button> 
-            <button onclick="deletePartner(${index})">Delete</button>`;
-        partnerList.appendChild(li);
+        namesList.forEach(name => {  
+            let option = document.createElement("option");  
+            option.value = name;  
+            option.textContent = name;  
+            select.appendChild(option);  
+        });  
+    }  
 
-        let option = document.createElement("option");
-        option.value = partner.name;
-        option.textContent = partner.name;
-        regPartnerSelect.appendChild(option);
-    });
-}
+    document.getElementById("registrationForm").addEventListener("submit", function(event) {  
+        event.preventDefault();  
+        let date = document.getElementById("dateInput").value;  
+        let name = document.getElementById("personSelect").value;  
+        let count = parseInt(document.getElementById("countInput").value);  
+        let editIndex = document.getElementById("editIndex").value;  
+        let data = loadData("registrationData");  
 
-function addPartner() {
-    let name = document.getElementById("partner-name").value;
-    partners.push({ id: partners.length + 1, name });
-    loadPartners();
-}
+        if (editIndex) {  
+            data[editIndex] = { date, name, count };  
+        } else {  
+            data.push({ date, name, count });  
+        }  
 
-function editPartner(index) {
-    let newName = prompt("Enter new name:");
-    partners[index].name = newName;
-    loadPartners();
-}
+        saveData("registrationData", data);  
+        alert("Data Saved!");  
+        document.getElementById("editIndex").value = "";  
+        event.target.reset();  
+        generateReports();  
+    });  
 
-function deletePartner(index) {
-    partners.splice(index, 1);
-    loadPartners();
-}
+    function editEntry(index) {  
+        if (!loggedIn) return;  
+        let data = loadData("registrationData");  
+        let entry = data[index];  
 
-// ================== REGISTRATION MANAGEMENT ================== //
-function loadRegistrations() {
-    let tableBody = document.querySelector("#registration-table tbody");
+        document.getElementById("dateInput").value = entry.date;  
+        document.getElementById("personSelect").value = entry.name;  
+        document.getElementById("countInput").value = entry.count;  
+        document.getElementById("editIndex").value = index;  
+    }  
 
-    let labels = [];
-    let values = [];
+    function deleteEntry(index) {  
+        if (!loggedIn) return;  
+        let data = loadData("registrationData");  
+        data.splice(index, 1);  
+        saveData("registrationData", data);  
+        generateReports();  
+    }  
 
-    tableBody.innerHTML = "";
+    function generateReports() {  
+        let data = loadData("registrationData");  
+        let namesList = loadData("namesData");  
+        let groupedData = {};  
+        let dailyCounts = {};  
 
-    registrations.forEach(reg => {
-        let row = `<tr><td>${reg.date}</td><td>${reg.partner}</td><td>${reg.count}</td></tr>`;
-        tableBody.innerHTML += row;
+        data.forEach(({ date, name, count }) => {  
+            if (!groupedData[date]) groupedData[date] = {};  
+            groupedData[date][name] = count;  
+            dailyCounts[date] = (dailyCounts[date] || 0) + count;  
+        });  
 
-        labels.push(reg.date);
-        values.push(reg.count);
-    });
+        let tableHeader = document.getElementById("tableHeader");  
+        let tableBody = document.getElementById("tableBody");  
+        tableHeader.innerHTML = `<tr><th>Date</th>${namesList.map(name => `<th>${name}</th>`).join("")}<th>Total</th>${loggedIn ? "<th>Actions</th>" : ""}</tr>`;  
+        tableBody.innerHTML = "";  
 
-    drawGraph(labels, values);
-}
+        Object.keys(groupedData).forEach((date, index) => {  
+            let row = `<td>${date}</td>`;  
+            let total = 0;  
+            namesList.forEach(name => {  
+                let count = groupedData[date][name] || 0;  
+                row += `<td>${count}</td>`;  
+                total += count;  
+            });  
+            row += `<td>${total}</td>`;  
+            if (loggedIn) {  
+                row += `<td><button onclick="editEntry(${index})">Edit</button>  
+                            <button onclick="deleteEntry(${index})">Delete</button></td>`;  
+            }  
+            tableBody.innerHTML += `<tr>${row}</tr>`;  
+        });  
 
-function addRegistration() {
-    let date = document.getElementById("reg-date").value;
-    let partner = document.getElementById("reg-partner").value;
-    let count = document.getElementById("reg-count").value;
+        drawGraphs(dailyCounts);  
+    }  
 
-    registrations.push({ date, partner, count });
-    loadRegistrations();
-}
+    function drawGraphs(dailyCounts) {  
+        let graphContainer = document.getElementById("graphContainer");  
+        graphContainer.innerHTML = "";  
 
-// ================== IMAGE MANAGEMENT ================== //
-function loadImages() {
-    let imageSlider = document.getElementById("imageSlider");
-    let imageList = document.getElementById("image-list");
+        let dates = Object.keys(dailyCounts);  
+        let canvas = document.createElement("canvas");  
+        graphContainer.appendChild(canvas);  
 
-    imageSlider.innerHTML = "";
-    imageList.innerHTML = "";
+        new Chart(canvas, {  
+            type: "bar",  
+            data: {  
+                labels: dates,    
+                datasets: [{  
+                    label: "Daily Registrations",  
+                    data: dates.map(d => dailyCounts[d]),  
+                    backgroundColor: ["red", "blue", "green", "yellow", "orange"]  
+                }]  
+            },  
+            options: {  
+                responsive: true,  
+                scales: { y: { beginAtZero: true } }  
+            }  
+        });  
+    }  
 
-    images.forEach((img, index) => {
-        let imgElement = document.createElement("img");
-        imgElement.src = img.url;
-        imgElement.width = 100;
-
-        let deleteBtn = document.createElement("button");
-        deleteBtn.textContent = "Delete";
-        deleteBtn.onclick = () => deleteImage(index);
-
-        let div = document.createElement("div");
-        div.appendChild(imgElement);
-        div.appendChild(deleteBtn);
-
-        imageList.appendChild(div);
-
-        let sliderImg = document.createElement("img");
-        sliderImg.src = img.url;
-        imageSlider.appendChild(sliderImg);
-    });
-}
-
-function uploadImage() {
-    let fileInput = document.getElementById("imageUpload");
-    let file = fileInput.files[0];
-
-    let reader = new FileReader();
-    reader.onloadend = function () {
-        images.push({ url: reader.result });
-        loadImages();
-    };
-    reader.readAsDataURL(file);
-}
-
-function deleteImage(index) {
-    images.splice(index, 1);
-    loadImages();
-}
-
-// ================== DRAW GRAPH ================== //
-function drawGraph(labels, values) {
-    new Chart(document.getElementById("registrationChart"), {
-        type: "bar",
-        data: {
-            labels: labels,
-            datasets: [{
-                label: "Registrations",
-                data: values,
-                backgroundColor: "blue"
-            }]
-        }
-    });
-}
-
-// Load Everything on Page Load
-window.onload = function() {
-    loadPartners();
-    loadRegistrations();
-    loadImages();
-};
+    generateReports();  
 </script>
 
-</body>
+</body>  
 </html>
