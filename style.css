@@ -1,31 +1,8 @@
 body {
-    font-family: Arial, sans-serif;
-    text-align: center;
-    background: #f4f4f4;
-    margin: 0;
-}
-
-/* Table Styles */
-.table-container {
-    margin: 20px auto;
-    width: 90%;
-    overflow-x: auto;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: white;
-}
-
-th, td {
-    border: 1px solid #ddd;
-    padding: 8px;
-}
-
-th {
-    background: #4CAF50;
-    color: white;
+font-family: Arial, sans-serif;
+text-align: center;
+background: #f4f4f4;
+margin: 0;
 }
 
 /* Center the slider properly */
@@ -61,7 +38,7 @@ th {
     opacity: 1;
 }
 
-/* Container for Better UI */
+/* Graph Container for Better UI */
 .chart-container {
     margin: 20px auto;
     width: 80%;
@@ -95,3 +72,27 @@ button:disabled {
     background: #ccc;
     cursor: not-allowed;
 }
+
+/* Table Styles */
+.table-container {
+margin: 20px auto;
+width: 90%;
+overflow-x: auto;
+}
+
+table {
+width: 100%;
+border-collapse: collapse;
+background: white;
+}
+
+th, td {
+border: 1px solid #ddd;
+padding: 8px;
+}
+
+th {
+background: #4CAF50;
+color: white;
+}
+
