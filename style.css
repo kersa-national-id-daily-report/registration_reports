@@ -5,7 +5,6 @@ body {
     margin: 0;
 }
 
-
 /* Table Styles */
 .table-container {
     margin: 20px auto;
@@ -29,15 +28,7 @@ th {
     color: white;
 }
 
-/* Pagination */
-
-
-
-
-
-
-/* Center the slider */
-./* Center the slider properly */
+/* Center the slider properly */
 .slider {
     width: 50%;  /* Adjust width as needed */
     height: 300px;
@@ -68,7 +59,9 @@ th {
 /* Show the active slide */
 .slides .active {
     opacity: 1;
-} Container for Better UI */
+}
+
+/* Container for Better UI */
 .chart-container {
     margin: 20px auto;
     width: 80%;
@@ -102,4 +95,3 @@ button:disabled {
     background: #ccc;
     cursor: not-allowed;
 }
-    
