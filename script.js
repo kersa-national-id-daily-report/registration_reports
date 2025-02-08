@@ -10,30 +10,64 @@ function showSlides() {
 }
 setInterval(showSlides, 3000);
 
-// Fetch and Display Data in Table
+// Pagination for Table
+let tableData = [];
+let tablePage = 0;
+const rowsPerPage = 10;
+
 fetch('data.csv')
     .then(response => response.text())
     .then(data => {
         let rows = data.trim().split("\n").map(row => row.split(","));
-        let tableBody = document.querySelector("#registrationTable tbody");
-        let totalDays = rows.slice(2); // Skip header rows
+        tableData = rows.slice(2); // Skip header
 
-        totalDays.forEach(row => {
-            let total = row.slice(1).reduce((sum, num) => sum + parseInt(num || 0), 0);
-            let htmlRow = `<tr><td>${row[0]}</td>${row.slice(1).map(num => `<td>${num}</td>`).join("")}<td>${total}</td></tr>`;
-            tableBody.innerHTML += htmlRow;
-        });
+        updateTable();
     });
 
-// Generate Chart.js Graph
+function updateTable() {
+    let tableBody = document.querySelector("#registrationTable tbody");
+    tableBody.innerHTML = "";
+
+    let start = tablePage * rowsPerPage;
+    let end = start + rowsPerPage;
+    let pageData = tableData.slice(start, end);
+
+    pageData.forEach(row => {
+        let total = row.slice(1).reduce((sum, num) => sum + parseInt(num || 0), 0);
+        let htmlRow = `<tr><td>${row[0]}</td>${row.slice(1).map(num => `<td>${num}</td>`).join("")}<td>${total}</td></tr>`;
+        tableBody.innerHTML += htmlRow;
+    });
+
+    document.getElementById("prevTable").disabled = tablePage === 0;
+    document.getElementById("nextTable").disabled = end >= tableData.length;
+}
+
+document.getElementById("prevTable").addEventListener("click", () => {
+    if (tablePage > 0) {
+        tablePage--;
+        updateTable();
+    }
+});
+
+document.getElementById("nextTable").addEventListener("click", () => {
+    if ((tablePage + 1) * rowsPerPage < tableData.length) {
+        tablePage++;
+        updateTable();
+    }
+});
+
+// Pagination for Chart
 let chartData = [];
 let chartLabels = [];
+let chartPage = 0;
+const chartItemsPerPage = 5;
+let chartInstance;
 
 fetch('data.csv')
     .then(response => response.text())
     .then(data => {
         let rows = data.trim().split("\n").map(row => row.split(","));
-        let totalDays = rows.slice(2);
+        let totalDays = rows.slice(2); // Skip header
 
         totalDays.forEach(row => {
             let total = row.slice(1).reduce((sum, num) => sum + parseInt(num || 0), 0);
@@ -41,18 +75,65 @@ fetch('data.csv')
             chartData.push(total);
         });
 
-        let ctx = document.getElementById("registrationChart").getContext("2d");
-        new Chart(ctx, {
-            type: "bar",
-            data: {
-                labels: chartLabels,
-                datasets: [{
-                    label: "Total Registrations",
-                    data: chartData,
-                    backgroundColor: "rgba(75, 192, 192, 0.6)",
-                    borderColor: "rgba(75, 192, 192, 1)",
-                    borderWidth: 1
-                }]
-            }
-        });
+        updateChart();
     });
+
+function updateChart() {
+    let start = chartPage * chartItemsPerPage;
+    let end = start + chartItemsPerPage;
+    let pageLabels = chartLabels.slice(start, end);
+    let pageData = chartData.slice(start, end);
+
+    if (chartInstance) {
+        chartInstance.destroy();
+    }
+
+    let ctx = document.getElementById("registrationChart").getContext("2d");
+    chartInstance = new Chart(ctx, {
+        type: "bar",
+        data: {
+            labels: pageLabels,
+            datasets: [{
+                label: "Total Registrations",
+                data: pageData,
+                backgroundColor: ["#FF5733", "#33FF57", "#5733FF", "#FFC300", "#33FFF3"],
+                borderColor: ["#C70039", "#2ECC71", "#8E44AD", "#D35400", "#3498DB"],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    labels: {
+                        font: {
+                            size: 14
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    document.getElementById("prevChart").disabled = chartPage === 0;
+    document.getElementById("nextChart").disabled = end >= chartData.length;
+}
+
+document.getElementById("prevChart").addEventListener("click", () => {
+    if (chartPage > 0) {
+        chartPage--;
+        updateChart();
+    }
+});
+
+document.getElementById("nextChart").addEventListener("click", () => {
+    if ((chartPage + 1) * chartItemsPerPage < chartData.length) {
+        chartPage++;
+        updateChart();
+    }
+});
