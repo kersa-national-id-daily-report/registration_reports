@@ -1,53 +1,60 @@
 body {
   font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f4f4f4;
+}
+
+header {
+  background: #007b ff;
+  color: white;
+  padding: 10px 0;
+  text-align: center;
+}
+
+.slider {
+  display: flex;
+  overflow: hidden;
+  width: 100%;
+  height: 300px;
+}
+
+.slider img {
+  width: 100%;
+  height: auto;
+}
+
+.table-container, .graph-container, .form-container {
   margin: 20px;
-}
-
-.hidden {
-  display: none;
-}
-
-#dashboard {
-  margin-top: 20px;
-}
-
-form {
-  margin-bottom: 20px;
-}
-
-input, select, button {
-  margin: 5px;
-  padding: 10px;
+  padding: 20px;
+  background: white;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 20px;
 }
 
 th, td {
-  border: 1px solid #ddd;
-  padding: 8px;
+  padding: 10px;
   text-align: center;
+  border: 1px solid #ddd;
 }
 
-th {
-  background-color: #f4f4f4;
+h2 {
+  color: #333;
 }
 
-#slider-images img {
-  max-width: 100%;
-  height: auto;
-  margin: 10px 0;
+button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  cursor: pointer;
 }
 
-#graphs-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-}
-
-canvas {
-  max-width: 400px;
+button:hover {
+  background-color: #0056b3;
 }
