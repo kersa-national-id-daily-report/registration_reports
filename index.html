@@ -6,204 +6,210 @@
     <title>National ID Registration Report</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; background-color: #f5f5f5; }
-        header { background-color: #007BFF; color: white; padding: 15px; }
-        .slider img { width: 80%; height: 300px; display: block; margin: auto; }
-        .stats { font-size: 20px; margin: 20px; }
-        canvas { max-width: 600px; margin: 20px auto; display: block; }
-        table, th, td { border: 1px solid black; border-collapse: collapse; padding: 10px; margin: auto; background-color: white; }
-        button { background-color: #007BFF; color: white; border: none; padding: 10px; margin: 5px; cursor: pointer; }
-        input, select { padding: 8px; margin: 5px; }
-        #adminPanel { display: none; }
-        .charts-container { display: flex; flex-wrap: wrap; justify-content: center; }
-        .chart-box { flex: 1 1 calc(33% - 20px); margin: 10px; }
+        body { font-family: Arial, sans-serif; background-color: #f4f4f9; text-align: center; }
+        header { background-color: #4CAF50; color: white; padding: 20px; }
+        section { padding: 20px; }
+        #image-slider { display: flex; overflow-x: auto; padding: 10px; gap: 10px; }
+        #image-slider img { max-width: 100%; height: auto; border-radius: 8px; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: center; }
+        th { background-color: #4CAF50; color: white; }
+        button { background-color: #4CAF50; color: white; padding: 10px; border: none; cursor: pointer; }
+        .graph-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; }
+        canvas { max-width: 600px; }
     </style>
 </head>
 <body>
+    <header>
+        <h1>National ID Registration Daily Report</h1>
+    </header>
 
-<header>
-    <h1>National ID Registration Report</h1>
-</header>
+    <section id="public-interface">
+        <h2>Public Interface</h2>
 
-<!-- Image Slider -->
-<div class="slider">
-    <img id="sliderImage" src="" alt="Registration Slide">
-</div>
+        <!-- Image Slider -->
+        <div id="image-slider"></div>
 
-<!-- Daily Registration Table -->
-<h2>Daily Registrations</h2>
-<table id="dataTable">
-    <tr>
-        <th>Date</th>
-        <th>Partner</th>
-        <th>Registrations</th>
-    </tr>
-</table>
+        <!-- Password Form -->
+        <form id="loginForm">
+            <input type="password" id="password" placeholder="Enter Password (id2009)">
+            <button type="submit">Login</button>
+        </form>
 
-<!-- Graphs Container -->
-<h2>Registration Trends</h2>
-<div class="charts-container" id="chartsContainer"></div>
+        <!-- Table for Daily Registration -->
+        <h3>Daily Registration Data</h3>
+        <table id="publicTable">
+            <thead><tr><th>Date</th></tr></thead>
+            <tbody></tbody>
+        </table>
 
-<!-- Login Form -->
-<div id="loginContainer">
-    <h2>Admin Login</h2>
-    <input type="password" id="passwordInput" placeholder="Enter Password">
-    <button onclick="checkLogin()">Login</button>
-</div>
+        <!-- Graph for Daily Total Registration -->
+        <h3>Total Registered Per Day</h3>
+        <canvas id="totalRegistrationsChart"></canvas>
+    </section>
 
-<!-- Admin Panel -->
-<div id="adminPanel">
-    <h2>Admin Dashboard</h2>
+    <section id="admin-interface" style="display:none;">
+        <h2>Admin Interface</h2>
 
-    <!-- Add Partner -->
-    <h3>Add Registration Partner</h3>
-    <input type="text" id="partnerName" placeholder="Partner Name">
-    <button onclick="addPartner()">Add</button>
+        <!-- Add Partner -->
+        <form id="addPartnerForm">
+            <input type="text" id="partnerName" placeholder="Partner Name">
+            <button type="submit">Add Partner</button>
+        </form>
 
-    <!-- Add Registrations -->
-    <h3>Add Registrations</h3>
-    <input type="date" id="selectDate">
-    <select id="selectPartner"></select>
-    <input type="number" id="regNumber" placeholder="Registrations">
-    <button onclick="updateRegistrations()">Update</button>
+        <!-- Add Registration Data -->
+        <h3>Add Registration</h3>
+        <input type="date" id="registrationDate">
+        <select id="registrationPartner"></select>
+        <input type="number" id="registrationNumber" placeholder="Number of Registrations">
+        <button onclick="addRegistration()">Add</button>
 
-    <!-- Upload Image -->
-    <h3>Upload Image</h3>
-    <input type="file" id="imageUpload">
-    <button onclick="uploadImage()">Upload</button>
+        <!-- Upload Images -->
+        <h3>Upload Images</h3>
+        <input type="file" id="imageUpload" multiple>
+        <button onclick="uploadImages()">Upload</button>
 
-    <button onclick="logout()">Logout</button>
-</div>
+        <button onclick="logout()">Logout</button>
+    </section>
 
-<script>
-    let registrations = {
-        "2025-02-08": { "Partner A": 50, "Partner B": 30 },
-        "2025-02-07": { "Partner A": 40, "Partner C": 20 }
-    };
-    let images = JSON.parse(localStorage.getItem("sliderImages")) || ["https://via.placeholder.com/800x400"];
-    let partners = JSON.parse(localStorage.getItem("partners")) || ["Partner A", "Partner B", "Partner C"];
-    let currentImageIndex = 0;
+    <script>
+        const correctPassword = "id2009";
+        let partners = ["Partner A", "Partner B", "Partner C"];
+        let registrations = { "2025-02-08": { "Partner A": 50, "Partner B": 30 }, "2025-02-07": { "Partner A": 40, "Partner C": 20 } };
+        let images = JSON.parse(localStorage.getItem("sliderImages")) || ["https://via.placeholder.com/800x400"];
 
-    // Image Slider
-    function updateSlider() {
-        document.getElementById("sliderImage").src = images[currentImageIndex];
-        currentImageIndex = (currentImageIndex + 1) % images.length;
-    }
-    setInterval(updateSlider, 3000);
-    updateSlider();
+        // Initialize Image Slider
+        function updateSlider() {
+            const slider = document.getElementById("image-slider");
+            slider.innerHTML = "";
+            images.forEach(src => {
+                const img = document.createElement("img");
+                img.src = src;
+                slider.appendChild(img);
+            });
+        }
+        updateSlider();
 
-    // Graph Rendering
-    function renderCharts() {
-        document.getElementById("chartsContainer").innerHTML = "";
-        Object.keys(registrations).forEach((date, index) => {
-            if (index % 5 === 0) document.getElementById("chartsContainer").innerHTML += "<br>";
-            let canvas = document.createElement("canvas");
-            canvas.id = "chart-" + date;
-            canvas.classList.add("chart-box");
-            document.getElementById("chartsContainer").appendChild(canvas);
+        // Login Form
+        document.getElementById("loginForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+            if (document.getElementById("password").value === correctPassword) {
+                document.getElementById("public-interface").style.display = "none";
+                document.getElementById("admin-interface").style.display = "block";
+                updatePartnerDropdown();
+            } else {
+                alert("Incorrect Password");
+            }
+        });
 
-            new Chart(canvas, {
+        // Add Partner
+        document.getElementById("addPartnerForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+            let partnerName = document.getElementById("partnerName").value;
+            if (partnerName && !partners.includes(partnerName)) {
+                partners.push(partnerName);
+                updatePartnerDropdown();
+                updateTable();
+                alert("Partner Added Successfully");
+            }
+        });
+
+        // Update Partner Dropdown
+        function updatePartnerDropdown() {
+            let select = document.getElementById("registrationPartner");
+            select.innerHTML = "";
+            partners.forEach(partner => {
+                let option = document.createElement("option");
+                option.value = partner;
+                option.innerText = partner;
+                select.appendChild(option);
+            });
+        }
+
+        // Add Registration
+        function addRegistration() {
+            let date = document.getElementById("registrationDate").value;
+            let partner = document.getElementById("registrationPartner").value;
+            let number = parseInt(document.getElementById("registrationNumber").value);
+            if (date && partner && number >= 0) {
+                if (!registrations[date]) registrations[date] = {};
+                registrations[date][partner] = (registrations[date][partner] || 0) + number;
+                updateTable();
+                updateGraph();
+                alert("Registration Added Successfully");
+            }
+        }
+
+        // Update Table
+        function updateTable() {
+            let table = document.getElementById("publicTable");
+            table.innerHTML = "<thead><tr><th>Date</th></tr></thead><tbody></tbody>";
+
+            let headerRow = table.querySelector("thead tr");
+            partners.forEach(partner => {
+                let th = document.createElement("th");
+                th.innerText = partner;
+                headerRow.appendChild(th);
+            });
+            let totalTh = document.createElement("th");
+            totalTh.innerText = "Total";
+            headerRow.appendChild(totalTh);
+
+            let tbody = table.querySelector("tbody");
+            tbody.innerHTML = "";
+            Object.keys(registrations).forEach(date => {
+                let row = `<tr><td>${date}</td>`;
+                let total = 0;
+                partners.forEach(partner => {
+                    let count = registrations[date][partner] || 0;
+                    row += `<td>${count}</td>`;
+                    total += count;
+                });
+                row += `<td>${total}</td></tr>`;
+                tbody.innerHTML += row;
+            });
+        }
+
+        // Update Graph
+        function updateGraph() {
+            let ctx = document.getElementById("totalRegistrationsChart").getContext("2d");
+            let dates = Object.keys(registrations);
+            let totals = dates.map(date => 
+                Object.values(registrations[date]).reduce((a, b) => a + b, 0)
+            );
+
+            new Chart(ctx, {
                 type: "bar",
                 data: {
-                    labels: Object.keys(registrations[date]),
-                    datasets: [{
-                        label: `Registrations on ${date}`,
-                        data: Object.values(registrations[date]),
-                        backgroundColor: ["red", "blue", "green", "yellow", "purple"]
-                    }]
+                    labels: dates,
+                    datasets: [{ label: "Total Registrations", data: totals, backgroundColor: "blue" }]
                 }
             });
-        });
-    }
-
-    // Admin Login
-    function checkLogin() {
-        let password = document.getElementById("passwordInput").value;
-        if (password === "id2009") {
-            document.getElementById("loginContainer").style.display = "none";
-            document.getElementById("adminPanel").style.display = "block";
-        } else {
-            alert("Incorrect Password!");
         }
-    }
 
-    // Add Partner
-    function addPartner() {
-        let partner = document.getElementById("partnerName").value;
-        if (partner && !partners.includes(partner)) {
-            partners.push(partner);
-            localStorage.setItem("partners", JSON.stringify(partners));
-            alert("Partner Added!");
-            updatePartnerDropdown();
-        }
-    }
-
-    // Update Registrations
-    function updateRegistrations() {
-        let date = document.getElementById("selectDate").value;
-        let partner = document.getElementById("selectPartner").value;
-        let number = parseInt(document.getElementById("regNumber").value);
-
-        if (date && partner && number >= 0) {
-            if (!registrations[date]) registrations[date] = {};
-            registrations[date][partner] = number;
-            alert("Updated Successfully!");
-            renderTable();
-            renderCharts();
-        } else {
-            alert("Fill all fields!");
-        }
-    }
-
-    // Render Table
-    function renderTable() {
-        let table = document.getElementById("dataTable");
-        table.innerHTML = "<tr><th>Date</th><th>Partner</th><th>Registrations</th></tr>";
-
-        Object.keys(registrations).forEach(date => {
-            Object.keys(registrations[date]).forEach(partner => {
-                let row = `<tr><td>${date}</td><td>${partner}</td><td>${registrations[date][partner]}</td></tr>`;
-                table.innerHTML += row;
+        // Upload Images
+        function uploadImages() {
+            let files = document.getElementById("imageUpload").files;
+            Array.from(files).forEach(file => {
+                let reader = new FileReader();
+                reader.onload = function(e) {
+                    images.push(e.target.result);
+                    localStorage.setItem("sliderImages", JSON.stringify(images));
+                    updateSlider();
+                    alert("Image Uploaded!");
+                };
+                reader.readAsDataURL(file);
             });
-        });
-    }
-
-    // Upload Image
-    function uploadImage() {
-        let file = document.getElementById("imageUpload").files[0];
-        if (file) {
-            let reader = new FileReader();
-            reader.onload = function (e) {
-                images.push(e.target.result);
-                localStorage.setItem("sliderImages", JSON.stringify(images));
-                alert("Image Uploaded!");
-            };
-            reader.readAsDataURL(file);
         }
-    }
 
-    // Logout
-    function logout() {
-        document.getElementById("loginContainer").style.display = "block";
-        document.getElementById("adminPanel").style.display = "none";
-    }
+        // Logout
+        function logout() {
+            document.getElementById("public-interface").style.display = "block";
+            document.getElementById("admin-interface").style.display = "none";
+        }
 
-    // Update Partner Dropdown
-    function updatePartnerDropdown() {
-        let select = document.getElementById("selectPartner");
-        select.innerHTML = "";
-        partners.forEach(partner => {
-            let option = document.createElement("option");
-            option.value = partner;
-            option.innerText = partner;
-            select.appendChild(option);
-        });
-    }
-
-    renderTable();
-    renderCharts();
-    updatePartnerDropdown();
-</script>
-
+        updateTable();
+        updateGraph();
+    </script>
 </body>
 </html>
