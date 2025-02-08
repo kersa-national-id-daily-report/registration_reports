@@ -4,309 +4,206 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>National ID Registration Report</title>
-    <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f9;
-            color: #333;
-        }
-        header {
-            background-color: #4CAF50;
-            color: white;
-            padding: 20px;
-            text-align: center;
-        }
-        section {
-            padding: 20px;
-        }
-        #public-interface, #admin-interface {
-            margin: 20px auto;
-            max-width: 1200px;
-        }
-        #image-slider {
-            display: flex;
-            overflow-x: auto;
-            gap: 10px;
-            padding: 10px;
-            background-color: #fff;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-        }
-        #image-slider img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 8px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-        }
-        table, th, td {
-            border: 1px solid #ddd;
-        }
-        th, td {
-            padding: 12px;
-            text-align: center;
-        }
-        th {
-            background-color: #4CAF50;
-            color: white;
-        }
-        tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-        .graph-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            margin: 20px 0;
-        }
-        .graph-container canvas {
-            flex: 1 1 calc(20% - 20px);
-            max-width: calc(20% - 20px);
-            background-color: #fff;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 10px;
-        }
-        form {
-            margin: 20px 0;
-        }
-        input, select, button {
-            padding: 10px;
-            margin: 5px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-        button {
-            background-color: #4CAF50;
-            color: white;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
+        body { font-family: Arial, sans-serif; text-align: center; background-color: #f5f5f5; }
+        header { background-color: #007BFF; color: white; padding: 15px; }
+        .slider img { width: 80%; height: 300px; display: block; margin: auto; }
+        .stats { font-size: 20px; margin: 20px; }
+        canvas { max-width: 600px; margin: 20px auto; display: block; }
+        table, th, td { border: 1px solid black; border-collapse: collapse; padding: 10px; margin: auto; background-color: white; }
+        button { background-color: #007BFF; color: white; border: none; padding: 10px; margin: 5px; cursor: pointer; }
+        input, select { padding: 8px; margin: 5px; }
+        #adminPanel { display: none; }
+        .charts-container { display: flex; flex-wrap: wrap; justify-content: center; }
+        .chart-box { flex: 1 1 calc(33% - 20px); margin: 10px; }
     </style>
 </head>
 <body>
-    <header>
-        <h1>National ID Registration Daily Report</h1>
-    </header>
 
-    <!-- Public Interface -->
-    <section id="public-interface">
-        <h2>Public Interface</h2>
+<header>
+    <h1>National ID Registration Report</h1>
+</header>
 
-        <!-- Image Slider -->
-        <div id="image-slider">
-            <img src="image1.jpg" alt="Image 1">
-            <img src="image2.jpg" alt="Image 2">
-            <img src="image3.jpg" alt="Image 3">
-        </div>
+<!-- Image Slider -->
+<div class="slider">
+    <img id="sliderImage" src="" alt="Registration Slide">
+</div>
 
-        <!-- Password Form -->
-        <form id="loginForm">
-            <input type="password" id="password" placeholder="Enter Password (id2009)">
-            <button type="submit">Login</button>
-        </form>
+<!-- Daily Registration Table -->
+<h2>Daily Registrations</h2>
+<table id="dataTable">
+    <tr>
+        <th>Date</th>
+        <th>Partner</th>
+        <th>Registrations</th>
+    </tr>
+</table>
 
-        <!-- Table for Daily Registration -->
-        <h3>Daily Registration Data</h3>
-        <table id="publicTable">
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Partner Name</th>
-                    <th>Total Registered</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Data will be populated dynamically -->
-            </tbody>
-        </table>
+<!-- Graphs Container -->
+<h2>Registration Trends</h2>
+<div class="charts-container" id="chartsContainer"></div>
 
-        <!-- Graphs for Daily Registration -->
-        <h3>Daily Registration Graphs</h3>
-        <div class="graph-container" id="publicGraphs">
-            <!-- Graphs will be populated dynamically -->
-        </div>
-    </section>
+<!-- Login Form -->
+<div id="loginContainer">
+    <h2>Admin Login</h2>
+    <input type="password" id="passwordInput" placeholder="Enter Password">
+    <button onclick="checkLogin()">Login</button>
+</div>
 
-    <!-- Admin Interface (Hidden by Default) -->
-    <section id="admin-interface" style="display:none;">
-        <h2>Admin Interface</h2>
+<!-- Admin Panel -->
+<div id="adminPanel">
+    <h2>Admin Dashboard</h2>
 
-        <!-- Add Partner Form -->
-        <form id="addPartnerForm">
-            <input type="text" id="partnerName" placeholder="Partner Name">
-            <button type="submit">Add Partner</button>
-        </form>
+    <!-- Add Partner -->
+    <h3>Add Registration Partner</h3>
+    <input type="text" id="partnerName" placeholder="Partner Name">
+    <button onclick="addPartner()">Add</button>
 
-        <!-- Edit/Delete Partner -->
-        <h3>Edit/Delete Partner</h3>
-        <select id="partnerList">
-            <!-- Partners will be populated dynamically -->
-        </select>
-        <button onclick="editPartner()">Edit Partner</button>
-        <button onclick="deletePartner()">Delete Partner</button>
+    <!-- Add Registrations -->
+    <h3>Add Registrations</h3>
+    <input type="date" id="selectDate">
+    <select id="selectPartner"></select>
+    <input type="number" id="regNumber" placeholder="Registrations">
+    <button onclick="updateRegistrations()">Update</button>
 
-        <!-- Add/Edit Registration Data -->
-        <h3>Add/Edit Registration Data</h3>
-        <input type="date" id="registrationDate">
-        <select id="registrationPartner">
-            <!-- Partners will be populated dynamically -->
-        </select>
-        <input type="number" id="registrationNumber" placeholder="Number of Registrations">
-        <button onclick="addRegistration()">Add Registration</button>
-        <button onclick="editRegistration()">Edit Registration</button>
-        <button onclick="deleteRegistration()">Delete Registration</button>
+    <!-- Upload Image -->
+    <h3>Upload Image</h3>
+    <input type="file" id="imageUpload">
+    <button onclick="uploadImage()">Upload</button>
 
-        <!-- Image Upload -->
-        <h3>Upload Sliding Images</h3>
-        <input type="file" id="imageUpload" multiple>
-        <button onclick="uploadImages()">Upload Images</button>
-        <div id="uploadedImages">
-            <!-- Uploaded images will be displayed here -->
-        </div>
+    <button onclick="logout()">Logout</button>
+</div>
 
-        <!-- Table for Daily Registration -->
-        <h3>Daily Registration Data</h3>
-        <table id="adminTable">
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Partner Name</th>
-                    <th>Total Registered</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Data will be populated dynamically -->
-            </tbody>
-        </table>
+<script>
+    let registrations = {
+        "2025-02-08": { "Partner A": 50, "Partner B": 30 },
+        "2025-02-07": { "Partner A": 40, "Partner C": 20 }
+    };
+    let images = JSON.parse(localStorage.getItem("sliderImages")) || ["https://via.placeholder.com/800x400"];
+    let partners = JSON.parse(localStorage.getItem("partners")) || ["Partner A", "Partner B", "Partner C"];
+    let currentImageIndex = 0;
 
-        <!-- Graphs for Daily Registration -->
-        <h3>Daily Registration Graphs</h3>
-        <div class="graph-container" id="adminGraphs">
-            <!-- Graphs will be populated dynamically -->
-        </div>
-    </section>
+    // Image Slider
+    function updateSlider() {
+        document.getElementById("sliderImage").src = images[currentImageIndex];
+        currentImageIndex = (currentImageIndex + 1) % images.length;
+    }
+    setInterval(updateSlider, 3000);
+    updateSlider();
 
-    <footer>
-        <p>© 2025 National ID Registration System</p>
-    </footer>
+    // Graph Rendering
+    function renderCharts() {
+        document.getElementById("chartsContainer").innerHTML = "";
+        Object.keys(registrations).forEach((date, index) => {
+            if (index % 5 === 0) document.getElementById("chartsContainer").innerHTML += "<br>";
+            let canvas = document.createElement("canvas");
+            canvas.id = "chart-" + date;
+            canvas.classList.add("chart-box");
+            document.getElementById("chartsContainer").appendChild(canvas);
 
-    <script>
-        const correctPassword = "id2009";
-        let partners = [];
-        let registrations = [];
-        let images = [];
-
-        // Login Form
-        document.getElementById('loginForm').addEventListener('submit', function(event) {
-            event.preventDefault();
-            const password = document.getElementById('password').value;
-            if (password === correctPassword) {
-                document.getElementById('public-interface').style.display = 'none';
-                document.getElementById('admin-interface').style.display = 'block';
-            } else {
-                alert('Incorrect Password');
-            }
+            new Chart(canvas, {
+                type: "bar",
+                data: {
+                    labels: Object.keys(registrations[date]),
+                    datasets: [{
+                        label: `Registrations on ${date}`,
+                        data: Object.values(registrations[date]),
+                        backgroundColor: ["red", "blue", "green", "yellow", "purple"]
+                    }]
+                }
+            });
         });
+    }
 
-        // Add Partner
-        document.getElementById('addPartnerForm').addEventListener('submit', function(event) {
-            event.preventDefault();
-            const partnerName = document.getElementById('partnerName').value;
-            if (partnerName) {
-                partners.push(partnerName);
-                updatePartnerList();
-                alert('Partner Added Successfully');
-            }
+    // Admin Login
+    function checkLogin() {
+        let password = document.getElementById("passwordInput").value;
+        if (password === "id2009") {
+            document.getElementById("loginContainer").style.display = "none";
+            document.getElementById("adminPanel").style.display = "block";
+        } else {
+            alert("Incorrect Password!");
+        }
+    }
+
+    // Add Partner
+    function addPartner() {
+        let partner = document.getElementById("partnerName").value;
+        if (partner && !partners.includes(partner)) {
+            partners.push(partner);
+            localStorage.setItem("partners", JSON.stringify(partners));
+            alert("Partner Added!");
+            updatePartnerDropdown();
+        }
+    }
+
+    // Update Registrations
+    function updateRegistrations() {
+        let date = document.getElementById("selectDate").value;
+        let partner = document.getElementById("selectPartner").value;
+        let number = parseInt(document.getElementById("regNumber").value);
+
+        if (date && partner && number >= 0) {
+            if (!registrations[date]) registrations[date] = {};
+            registrations[date][partner] = number;
+            alert("Updated Successfully!");
+            renderTable();
+            renderCharts();
+        } else {
+            alert("Fill all fields!");
+        }
+    }
+
+    // Render Table
+    function renderTable() {
+        let table = document.getElementById("dataTable");
+        table.innerHTML = "<tr><th>Date</th><th>Partner</th><th>Registrations</th></tr>";
+
+        Object.keys(registrations).forEach(date => {
+            Object.keys(registrations[date]).forEach(partner => {
+                let row = `<tr><td>${date}</td><td>${partner}</td><td>${registrations[date][partner]}</td></tr>`;
+                table.innerHTML += row;
+            });
         });
+    }
 
-        // Update Partner List
-        function updatePartnerList() {
-            const partnerList = document.getElementById('partnerList');
-            const registrationPartner = document.getElementById('registrationPartner');
-            partnerList.innerHTML = '';
-            registrationPartner.innerHTML = '';
-            partners.forEach(partner => {
-                const option = document.createElement('option');
-                option.value = partner;
-                option.textContent = partner;
-                partnerList.appendChild(option.cloneNode(true));
-                registrationPartner.appendChild(option);
-            });
+    // Upload Image
+    function uploadImage() {
+        let file = document.getElementById("imageUpload").files[0];
+        if (file) {
+            let reader = new FileReader();
+            reader.onload = function (e) {
+                images.push(e.target.result);
+                localStorage.setItem("sliderImages", JSON.stringify(images));
+                alert("Image Uploaded!");
+            };
+            reader.readAsDataURL(file);
         }
+    }
 
-        // Add Registration
-        function addRegistration() {
-            const date = document.getElementById('registrationDate').value;
-            const partner = document.getElementById('registrationPartner').value;
-            const number = document.getElementById('registrationNumber').value;
-            if (date && partner && number) {
-                registrations.push({ date, partner, number });
-                updateTables();
-                updateGraphs();
-                alert('Registration Added Successfully');
-            }
-        }
+    // Logout
+    function logout() {
+        document.getElementById("loginContainer").style.display = "block";
+        document.getElementById("adminPanel").style.display = "none";
+    }
 
-        // Update Tables
-        function updateTables() {
-            const publicTable = document.getElementById('publicTable').getElementsByTagName('tbody')[0];
-            const adminTable = document.getElementById('adminTable').getElementsByTagName('tbody')[0];
-            publicTable.innerHTML = '';
-            adminTable.innerHTML = '';
-            registrations.forEach(reg => {
-                const row = `<tr><td>${reg.date}</td><td>${reg.partner}</td><td>${reg.number}</td></tr>`;
-                publicTable.innerHTML += row;
-                adminTable.innerHTML += row;
-            });
-        }
+    // Update Partner Dropdown
+    function updatePartnerDropdown() {
+        let select = document.getElementById("selectPartner");
+        select.innerHTML = "";
+        partners.forEach(partner => {
+            let option = document.createElement("option");
+            option.value = partner;
+            option.innerText = partner;
+            select.appendChild(option);
+        });
+    }
 
-        // Update Graphs
-        function updateGraphs() {
-            const publicGraphs = document.getElementById('publicGraphs');
-            const adminGraphs = document.getElementById('adminGraphs');
-            publicGraphs.innerHTML = '';
-            adminGraphs.innerHTML = '';
-            registrations.forEach((reg, index) => {
-                const canvas = document.createElement('canvas');
-                new Chart(canvas, {
-                    type: 'bar',
-                    data: {
-                        labels: [reg.date],
-                        datasets: [{
-                            label: reg.partner,
-                            data: [reg.number],
-                            backgroundColor: `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}, 0.6)`
-                        }]
-                    }
-                });
-                publicGraphs.appendChild(canvas.cloneNode(true));
-                adminGraphs.appendChild(canvas);
-            });
-        }
+    renderTable();
+    renderCharts();
+    updatePartnerDropdown();
+</script>
 
-        // Upload Images
-        function uploadImages() {
-            const files = document.getElementById('imageUpload').files;
-            Array.from(files).forEach(file => {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const img = document.createElement('img');
-                    img.src = e.target.result;
-                    document.getElementById('uploadedImages').appendChild(img);
-                };
-                reader.readAsDataURL(file);
-            });
-        }
-    </script>
 </body>
 </html>
