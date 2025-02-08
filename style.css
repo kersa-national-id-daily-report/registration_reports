@@ -29,7 +29,6 @@ th {
 }
 
 /* Center the slider properly */
-/* Center the slider properly */
 .slider {
     width: 50%;  /* Adjust width as needed */
     height: 300px;
@@ -61,6 +60,7 @@ th {
 .slides .active {
     opacity: 1;
 }
+
 /* Container for Better UI */
 .chart-container {
     margin: 20px auto;
