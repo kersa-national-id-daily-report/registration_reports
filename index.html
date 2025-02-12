@@ -9,7 +9,6 @@
     <script src="script.js" defer></script>
 </head>
 <body>
-
     <!-- Smart Sliding Image Section -->
     <div class="slider">
         <div class="slides">
@@ -20,7 +19,34 @@
     </div>
 
     <!-- Attendance Button -->
-    <button id="toggleAttendance">📋 View Attendance</button>
+    <div class="attendance-button">
+        <button id="attendanceBtn">View Attendance</button>
+    </div>
+
+    <!-- Attendance Table Section (Hidden by Default) -->
+    <div class="table-container" id="attendanceTableContainer" style="display: none;">
+        <h2>ቀርሳ Station - Attendance Report</h2>
+        <table id="attendanceTable">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Getachew (Supervisor)</th>
+                    <th>Emebet (Officer)</th>
+                    <th>Ermiyas (Officer)</th>
+                    <th>Mustefa (Officer)</th>
+                    <th>Abenazer (Officer)</th>
+                    <th>Amar (Officer)</th>
+                    <th>Firomsa (Ass.)</th>
+                    <th>Roman (Ass.)</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <div class="pagination">
+            <button id="prevAttendance">« Prev</button>
+            <button id="nextAttendance">Next »</button>
+        </div>
+    </div>
 
     <!-- Registration Report Table -->
     <div class="table-container">
@@ -48,9 +74,9 @@
         </div>
     </div>
 
-    <!-- Registration Graph -->
+    <!-- Graph Section -->
     <div class="chart-container">
-        <h2>📊 ቀርሳ Daily Registration</h2>
+        <h2>ቀርሳ Daily Registration | የእለቱን ቁጥር ለማወቅ የ Graph ምልክቱን ይንኩት</h2>
         <canvas id="registrationChart"></canvas>
         <div class="pagination">
             <button id="prevChart">« Prev</button>
@@ -58,38 +84,13 @@
         </div>
     </div>
 
-    <!-- Booked Card Print Graph -->
+    <!-- Total Booked Graph Section -->
     <div class="chart-container">
-        <h2>📊 Daily Booked Card Prints</h2>
+        <h2>ቀርሳ Total Booked Cards | የታችኛው ግራፍ ላይ ያሉትን ቀናት ለማየት የ Graph ምልክቱን ይንኩት</h2>
         <canvas id="bookedChart"></canvas>
         <div class="pagination">
-            <button id="prevBookedChart">« Prev</button>
-            <button id="nextBookedChart">Next »</button>
-        </div>
-    </div>
-
-    <!-- Attendance Table -->
-    <div class="attendance-container" style="display: none;">
-        <h2>Daily Attendance Report</h2>
-        <table id="attendanceTable">
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Supervisor</th>
-                    <th>Emebet</th>
-                    <th>Ermiyas</th>
-                    <th>Mustefa</th>
-                    <th>Abenazer</th>
-                    <th>Amar</th>
-                    <th>Firomsa</th>
-                    <th>Roman</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-        <div class="pagination">
-            <button id="prevAttendance">« Prev</button>
-            <button id="nextAttendance">Next »</button>
+            <button id="prevBooked">« Prev</button>
+            <button id="nextBooked">Next »</button>
         </div>
     </div>
 
@@ -97,6 +98,5 @@
     <footer>
         <p>Developed by Getachew Dires</p>
     </footer>
-
 </body>
 </html>
