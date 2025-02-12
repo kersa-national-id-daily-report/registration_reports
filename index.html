@@ -1,95 +1,102 @@
-<!DOCTYPE html>  <html lang="en">  
-<head>  
-    <meta charset="UTF-8">  
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
-    <title>ቀርሳ Station - National ID Registration Report</title>  
-    <link rel="stylesheet" href="style.css">  
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>  
-    <script src="script.js" defer></script>  
-</head>  
-<body>  <!-- Smart Sliding Image Section -->  
-<div class="slider">  
-    <div class="slides">  
-        <img src="slide1.jpg" class="slide active">  
-        <img src="slide2.jpg" class="slide">  
-        <img src="slide3.jpg" class="slide">  
-    </div>  
-</div>  
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ቀርሳ Station - National ID Registration Report</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="script.js" defer></script>
+</head>
+<body>
 
-<!-- Registration Report Table -->  
-<div class="table-container">  
-    <h2>ቀርሳ Station - National ID Registration Report</h2>  
-    <table id="registrationTable">  
-        <thead>  
-            <tr>  
-                <th>Date</th>  
-                <th>Getachew (Supervisor)</th>  
-                <th>Emebet (Officer)</th>  
-                <th>Ermiyas (Officer)</th>  
-                <th>Mustefa (Officer)</th>  
-                <th>Abenazer (Officer)</th>  
-                <th>Amar (Officer)</th>  
-                <th>Firomsa (Ass.)</th>  
-                <th>Roman (Ass.)</th>  
-                <th>Total</th>  
-            </tr>  
-        </thead>  
-        <tbody></tbody>  
-    </table>  
-    <div class="pagination">  
-        <button id="prevTable">« Prev</button>  
-        <button id="nextTable">Next »</button>  
-    </div>  
-</div>  
-
-<!-- Graph Section -->  
-<div class="chart-container">  
-    <h2>ቀርሳ Daily Registration | የእለቱን ቁጥር ለማወቅ የ Graph ምልክቱን ይንኩት</h2>  
-    <canvas id="registrationChart"></canvas>  
-    <div class="pagination">  
-        <button id="prevChart">« Prev</button>  
-        <button id="nextChart">Next »</button>  
-    </div>  
-</div>  
-
-
-<!-- Booked Card Print Graph Section -->
-<div class="chart-container">
-    <h2>📊 Daily Booked Card Prints</h2>
-    <canvas id="bookedChart"></canvas>
-    <div class="pagination">
-        <button id="prevBookedChart">« Prev</button>
-        <button id="nextBookedChart">Next »</button>
+    <!-- Smart Sliding Image Section -->
+    <div class="slider">
+        <div class="slides">
+            <img src="slide1.jpg" class="slide active">
+            <img src="slide2.jpg" class="slide">
+            <img src="slide3.jpg" class="slide">
+        </div>
     </div>
-</div>
+
+    <!-- Attendance Button -->
+    <button id="toggleAttendance">📋 View Attendance</button>
+
+    <!-- Registration Report Table -->
+    <div class="table-container">
+        <h2>ቀርሳ Station - National ID Registration Report</h2>
+        <table id="registrationTable">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Getachew (Supervisor)</th>
+                    <th>Emebet (Officer)</th>
+                    <th>Ermiyas (Officer)</th>
+                    <th>Mustefa (Officer)</th>
+                    <th>Abenazer (Officer)</th>
+                    <th>Amar (Officer)</th>
+                    <th>Firomsa (Ass.)</th>
+                    <th>Roman (Ass.)</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <div class="pagination">
+            <button id="prevTable">« Prev</button>
+            <button id="nextTable">Next »</button>
+        </div>
+    </div>
+
+    <!-- Registration Graph -->
+    <div class="chart-container">
+        <h2>📊 ቀርሳ Daily Registration</h2>
+        <canvas id="registrationChart"></canvas>
+        <div class="pagination">
+            <button id="prevChart">« Prev</button>
+            <button id="nextChart">Next »</button>
+        </div>
+    </div>
+
+    <!-- Booked Card Print Graph -->
+    <div class="chart-container">
+        <h2>📊 Daily Booked Card Prints</h2>
+        <canvas id="bookedChart"></canvas>
+        <div class="pagination">
+            <button id="prevBookedChart">« Prev</button>
+            <button id="nextBookedChart">Next »</button>
+        </div>
+    </div>
+
     <!-- Attendance Table -->
-<div class="attendance-container" style="display: none;">
-    <h2>Daily Attendance Report</h2>
-    <table id="attendanceTable">
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th>Supervisor</th>
-                <th>Emebet</th>
-                <th>Ermiyas</th>
-                <th>Mustefa</th>
-                <th>Abenazer</th>
-                <th>Amar</th>
-                <th>Firomsa</th>
-                <th>Roman</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
-    <div class="pagination">
-        <button id="prevAttendance">« Prev</button>
-        <button id="nextAttendance">Next »</button>
+    <div class="attendance-container" style="display: none;">
+        <h2>Daily Attendance Report</h2>
+        <table id="attendanceTable">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Supervisor</th>
+                    <th>Emebet</th>
+                    <th>Ermiyas</th>
+                    <th>Mustefa</th>
+                    <th>Abenazer</th>
+                    <th>Amar</th>
+                    <th>Firomsa</th>
+                    <th>Roman</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <div class="pagination">
+            <button id="prevAttendance">« Prev</button>
+            <button id="nextAttendance">Next »</button>
+        </div>
     </div>
-</div>
-<!-- Footer -->  
-<footer>  
-    <p>Developed by Getachew Dires</p>  
-</footer>
 
-</body>  
-</html>  
+    <!-- Footer -->
+    <footer>
+        <p>Developed by Getachew Dires</p>
+    </footer>
+
+</body>
+</html>
