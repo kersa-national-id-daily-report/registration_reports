@@ -10,6 +10,15 @@ function showSlides() {
 }
 setInterval(showSlides, 3000);
 
+// Fetch Booked Data
+fetch('Booked.csv')
+    .then(response => response.text())
+    .then(data => {
+        let rows = data.split("\n").slice(1);
+        let latest = rows[rows.length - 1].split(",");
+        document.getElementById("bookedCount").textContent = `📌 ${latest[1]} Booked Prints`;
+    });
+
 // Pagination for Table
 let tableData = [];
 let tablePage = 0;
@@ -19,7 +28,7 @@ fetch('data.csv')
     .then(response => response.text())
     .then(data => {
         let rows = data.trim().split("\n").map(row => row.split(","));
-        tableData = rows.slice(2); // Skip header
+        tableData = rows.slice(1);
 
         updateTable();
     });
@@ -29,12 +38,34 @@ function updateTable() {
     tableBody.innerHTML = "";
 
     let start = tablePage * rowsPerPage;
-    let end = start + rowsPerPage;
-    let pageData = tableData.slice(start, end);
+    let pageData = tableData.slice(start, start + rowsPerPage);
 
     pageData.forEach(row => {
         let total = row.slice(1).reduce((sum, num) => sum + parseInt(num || 0), 0);
         let htmlRow = `<tr><td>${row[0]}</td>${row.slice(1).map(num => `<td>${num}</td>`).join("")}<td>${total}</td></tr>`;
+        tableBody.innerHTML += htmlRow;
+    });
+}
+
+document.getElementById("prevTable").addEventListener("click", () => {
+    if (tablePage > 0) {
+        tablePage--;
+        updateTable();
+    }
+});
+
+document.getElementById("nextTable").addEventListener("click", () => {
+    if ((tablePage + 1) * rowsPerPage < tableData.length) {
+        tablePage++;
+        updateTable();
+    }
+});
+
+// Toggle Attendance Table
+document.getElementById("toggleAttendance").addEventListener("click", function() {
+    let container = document.querySelector(".attendance-container");
+    container.style.display = container.style.display === "none" ? "block" : "none";
+});        let htmlRow = `<tr><td>${row[0]}</td>${row.slice(1).map(num => `<td>${num}</td>`).join("")}<td>${total}</td></tr>`;
         tableBody.innerHTML += htmlRow;
     });
 
