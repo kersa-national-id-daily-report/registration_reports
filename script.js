@@ -68,9 +68,4 @@ document.getElementById("prevBookedChart").addEventListener("click", () => {
     }
 });
 
-document.getElementById("nextBookedChart").addEventListener("click", () => {
-    if ((bookedPage + 1) * bookedItemsPerPage < bookedData.length) {
-        bookedPage++;
-        updateBookedChart();
-    }
-});
+document.getElementById("nextBookedChart").addEventListener("
