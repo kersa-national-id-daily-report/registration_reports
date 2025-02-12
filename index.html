@@ -27,51 +27,47 @@
     <!-- Attendance Table Section (Hidden by Default) -->
     <div class="table-container" id="attendanceTableContainer" style="display: none;">
         <h2>ቀርሳ Station - Attendance Report</h2>
-        <table id="attendanceTable">
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Getachew (Supervisor)</th>
-                    <th>Emebet (Officer)</th>
-                    <th>Ermiyas (Officer)</th>
-                    <th>Mustefa (Officer)</th>
-                    <th>Abenazer (Officer)</th>
-                    <th>Amar (Officer)</th>
-                    <th>Firomsa (Ass.)</th>
-                    <th>Roman (Ass.)</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-        <div class="pagination">
-            <button id="prevAttendance">« Prev</button>
-            <button id="nextAttendance">Next »</button>
+        <div class="table-scroll">
+            <table id="attendanceTable">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Getachew (Supervisor)</th>
+                        <th>Emebet (Officer)</th>
+                        <th>Ermiyas (Officer)</th>
+                        <th>Mustefa (Officer)</th>
+                        <th>Abenazer (Officer)</th>
+                        <th>Amar (Officer)</th>
+                        <th>Firomsa (Ass.)</th>
+                        <th>Roman (Ass.)</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
         </div>
     </div>
 
     <!-- Registration Report Table -->
     <div class="table-container">
         <h2>ቀርሳ Station - National ID Registration Report</h2>
-        <table id="registrationTable">
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Getachew (Supervisor)</th>
-                    <th>Emebet (Officer)</th>
-                    <th>Ermiyas (Officer)</th>
-                    <th>Mustefa (Officer)</th>
-                    <th>Abenazer (Officer)</th>
-                    <th>Amar (Officer)</th>
-                    <th>Firomsa (Ass.)</th>
-                    <th>Roman (Ass.)</th>
-                    <th>Total</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-        <div class="pagination">
-            <button id="prevTable">« Prev</button>
-            <button id="nextTable">Next »</button>
+        <div class="table-scroll">
+            <table id="registrationTable">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Getachew (Supervisor)</th>
+                        <th>Emebet (Officer)</th>
+                        <th>Ermiyas (Officer)</th>
+                        <th>Mustefa (Officer)</th>
+                        <th>Abenazer (Officer)</th>
+                        <th>Amar (Officer)</th>
+                        <th>Firomsa (Ass.)</th>
+                        <th>Roman (Ass.)</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
         </div>
     </div>
 
@@ -79,20 +75,12 @@
     <div class="chart-container">
         <h2>ቀርሳ Daily Registration | የእለቱን ቁጥር ለማወቅ የ Graph ምልክቱን ይንኩት</h2>
         <canvas id="registrationChart"></canvas>
-        <div class="pagination">
-            <button id="prevChart">« Prev</button>
-            <button id="nextChart">Next »</button>
-        </div>
     </div>
 
     <!-- Total Booked Graph Section -->
     <div class="chart-container">
         <h2>ቀርሳ Total Booked Cards | የታችኛው ግራፍ ላይ ያሉትን ቀናት ለማየት የ Graph ምልክቱን ይንኩት</h2>
         <canvas id="bookedChart"></canvas>
-        <div class="pagination">
-            <button id="prevBooked">« Prev</button>
-            <button id="nextBooked">Next »</button>
-        </div>
     </div>
 
     <!-- Footer -->
