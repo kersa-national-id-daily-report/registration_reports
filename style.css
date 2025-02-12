@@ -10,16 +10,6 @@ body {
     width: 100%;
     height: 300px;
     overflow: hidden;
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.slides {
-    width: 100%;
-    height: 100%;
-    position: relative;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -30,24 +20,12 @@ body {
     height: 100%;
     max-width: 100%;
     object-fit: cover;
-    position: absolute;
     opacity: 0;
     transition: opacity 1s ease-in-out;
 }
 
 .slides .active {
     opacity: 1;
-}
-
-/* Booked Card */
-.booked-card {
-    background: linear-gradient(45deg, #4CAF50, #2196F3);
-    color: white;
-    padding: 15px;
-    text-align: center;
-    font-size: 1.5em;
-    border-radius: 10px;
-    margin-bottom: 20px;
 }
 
 /* Graph Container */
@@ -60,15 +38,28 @@ body {
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
 }
 
-/* Pagination Buttons */
-.pagination {
-    margin-top: 10px;
-    text-align: center;
+/* Attendance Table */
+.attendance-container {
+    margin: 20px auto;
+    width: 90%;
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
 }
 
+.attendance-container table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th {
+    background: #FF9800;
+    color: white;
+}
+
+/* Buttons */
 button {
     padding: 10px;
-    margin: 5px;
     cursor: pointer;
     background: #007BFF;
     color: white;
@@ -82,28 +73,4 @@ button:hover {
 
 button:disabled {
     background: #ccc;
-    cursor: not-allowed;
-}
-
-/* Table Styles */
-.table-container {
-    margin: 20px auto;
-    width: 90%;
-    overflow-x: auto;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: white;
-}
-
-th, td {
-    border: 1px solid #ddd;
-    padding: 8px;
-}
-
-th {
-    background: #4CAF50;
-    color: white;
 }
